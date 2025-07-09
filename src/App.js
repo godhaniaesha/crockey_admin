@@ -1,24 +1,35 @@
-import logo from './logo.svg';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
+import Login from './Pages/Login';
+import ForgotPassword from './Pages/ForgotPassword';
+import EmailVerificaion from './Pages/EmailVerification';
+import ResetPassword from './Pages/ResetPassword';
+import Dashboard from './Pages/Dashboard';
+import Main from './Pages/Main';
+import ProductForm from './Pages/ProductForm';
+import ProductTable from './Pages/ProductTable';
+import Product from './Pages/Product';
+import CategoryList from './Pages/CategoryList';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/login' element={<Login />}></Route>
+        <Route path='/forgotPassword' element={<ForgotPassword />}></Route>
+        <Route path='/emailVerification' element={<EmailVerificaion />}></Route>
+        <Route path='/resetPassword' element={<ResetPassword />}></Route>
+
+        <Route path='/' element={<Main />}>
+          <Route index element={<Dashboard />} />
+          <Route path='product/add' element={<ProductForm />} />
+          <Route path='product/list' element={<ProductTable />} />
+          <Route path='shop/product' element={<Product />} />
+          <Route path='category/list' element={<CategoryList />} />
+
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
