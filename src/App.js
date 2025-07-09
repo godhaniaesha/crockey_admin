@@ -10,6 +10,12 @@ import ProductForm from './Pages/ProductForm';
 import ProductTable from './Pages/ProductTable';
 import Product from './Pages/Product';
 import CategoryList from './Pages/CategoryList';
+import SubcategoryList from './Pages/SubcategoryList';
+import OrderList from './Pages/OrderList';
+import CustomerList from './Pages/CustomerList';
+import CouponList from './Pages/CouponList';
+import OfferList from './Pages/OfferList';
+import Profile from './Pages/Profile';
 
 function App() {
   return (
@@ -26,6 +32,12 @@ function App() {
           <Route path='product/list' element={<ProductTable />} />
           <Route path='shop/product' element={<Product />} />
           <Route path='category/list' element={<CategoryList />} />
+          <Route path='subcategory/list' element={<SubcategoryList />} />
+          <Route path='orders/list' element={<OrderList />} />
+          <Route path='customer/list' element={<CustomerList />} />
+          <Route path='coupons/list' element={<CouponList />} />
+          <Route path='offers/list' element={<OfferList />} />
+          <Route path='profile' element={<Profile />} />
 
         </Route>
       </Routes>
