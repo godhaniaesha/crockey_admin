@@ -19,6 +19,11 @@ import CustomerList from './Pages/CustomerList';
 import CouponList from './Pages/CouponList';
 import OfferList from './Pages/OfferList';
 import Profile from './Pages/Profile';
+import CategoryForm from './Pages/CategoryForm';
+import SubCategoryForm from './Pages/SubCategoryForm';
+import CouponForm from './Pages/CouponForm';
+import OffersForm from './Pages/OffersForm';
+import CheckOut from './Pages/CheckOut';
 
 function App() {
   return (
@@ -31,6 +36,11 @@ function App() {
 
         <Route path='/' element={<Main />}>
           <Route index element={<Dashboard />} />
+          <Route path='category/add' element={<CategoryForm />} />
+          <Route path='subcategory/add' element={<SubCategoryForm />} />
+          <Route path='coupons/add' element={<CouponForm />} />
+          <Route path='offers/add' element={<OffersForm />} />
+          <Route path='product/add' element={<ProductForm />} />
           <Route path='product/add' element={<ProductForm />} />
           <Route path='product/list' element={<ProductTable />} />
           <Route path='product/detail' element={<ProductDetail />} />
@@ -44,6 +54,7 @@ function App() {
           <Route path='coupons/list' element={<CouponList />} />
           <Route path='offers/list' element={<OfferList />} />
           <Route path='profile' element={<Profile />} />
+          <Route path='checkOut' element={<CheckOut />} />
 
         </Route>
       </Routes>
