@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 require('dotenv').config();
 
-const { authRoutes } = require('./router');
+const routers = require('./router');
 
 const app = express();
 
@@ -13,7 +13,7 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
@@ -33,7 +33,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/crockey_admin', {
+        const conn = await mongoose.connect(process.env.MONGO_DB_URL || 'mongodb://localhost:27017/crockey_admin', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
@@ -55,8 +55,17 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Mount auth routes
-app.use('/api/auth', authRoutes);
+// Mount all routers individually
+app.use('/api/auth', routers.authRoutes);
+app.use('/api/categories', routers.categoryRoutes);
+app.use('/api/products', routers.productRoutes);
+app.use('/api/subcategories', routers.subcategoryRoutes);
+app.use('/api/coupons', routers.couponRoutes);
+app.use('/api/offers', routers.offerRoutes);
+app.use('/api/carts', routers.cartRoutes);
+app.use('/api/wishlists', routers.wishlistRoutes);
+app.use('/api/orders', routers.orderRoutes);
+app.use('/api/dashboard', routers.dashboardRoutes);
 
 // ==================== ERROR HANDLING MIDDLEWARE ====================
 
