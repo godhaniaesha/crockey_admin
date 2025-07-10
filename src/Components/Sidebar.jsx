@@ -29,6 +29,7 @@ const menu = [
         link: '/product',
         submenu: [
             { name: 'Add Product', link: '/product/add' },
+            { name: 'Product Detail', link: '/product/detail' },
             { name: 'Product List', link: '/product/list' }
         ]
     },
@@ -115,8 +116,8 @@ const Sidebar = ({ open, setopen }) => {
     const effectiveCollapsed = isDesktop ? collapsed : false;
 
     return (
-        <aside className={`fixed z-40 top-0 left-0 h-100 w-64 d_sidebar shadow-lg transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block ${effectiveCollapsed ? 'w-20' : 'w-64'} transition-all duration-300 ease-in-out`}>
-            <div className="relative flex items-center py-[20px] border-b d_border pl-4 pr-10">
+        <aside className={`fixed z-40 top-0 left-0 h-screen w-64 d_sidebar shadow-lg transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block ${effectiveCollapsed ? 'w-20' : 'w-64'} transition-all duration-300 ease-in-out flex flex-col`}>
+            <div className="relative flex items-center py-[20px] border-b d_border pl-4 pr-10 flex-shrink-0">
                 <span className={`text-2xl font-bold tracking-widest d_logo transition-all duration-300 ${effectiveCollapsed ? 'hidden' : ''}`}>CROCKERY</span>
                 {/* Close button absolutely positioned at top-right on mobile */}
                 <button className="md:hidden absolute top-1/2 right-4 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-full transition shadow-lg bg-white" onClick={() => setopen(false)}>
@@ -137,7 +138,7 @@ const Sidebar = ({ open, setopen }) => {
                     </button>
                 </div>
             </div>
-            <nav className="mt-6">
+            <nav className="mt-6 flex-1 overflow-y-auto min-h-0">
                 <ul className="space-y-2">
                     {menu.map((item, idx) => (
                         <li key={item.name} className="relative group">
