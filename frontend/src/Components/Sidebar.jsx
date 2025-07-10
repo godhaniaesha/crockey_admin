@@ -116,7 +116,14 @@ const Sidebar = ({ open, setopen }) => {
     const effectiveCollapsed = isDesktop ? collapsed : false;
 
     return (
-        <aside className={`fixed z-40 top-0 left-0 h-screen w-64 d_sidebar shadow-lg transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block ${effectiveCollapsed ? 'w-20' : 'w-64'} transition-all duration-300 ease-in-out flex flex-col`}>
+        <aside className={`fixed z-40 top-0 left-0 h-screen d_sidebar shadow-lg transition-transform duration-300
+    ${open ? 'translate-x-0' : '-translate-x-full'}
+    md:translate-x-0 md:static md:block
+    ${effectiveCollapsed ? 'w-20' : 'w-64'}
+    flex flex-col
+    overflow-x-hidden
+    transition-all duration-300 ease-in-out
+`}>
             <div className="relative flex items-center py-[20px] border-b d_border pl-4 pr-10 flex-shrink-0">
                 <span className={`text-2xl font-bold tracking-widest d_logo transition-all duration-300 ${effectiveCollapsed ? 'hidden' : ''}`}>CROCKERY</span>
                 {/* Close button absolutely positioned at top-right on mobile */}
@@ -147,7 +154,14 @@ const Sidebar = ({ open, setopen }) => {
                                     <button
                                         type="button"
                                         className={`flex items-center w-full px-6 py-3 rounded-lg transition-all d_menu_item font-medium hover:bg-d_hover hover:shadow-lg ${location.pathname.startsWith(item.link) ? 'd_active' : 'text-dark'} ${effectiveCollapsed ? 'justify-center px-2' : ''}`}
-                                        onClick={() => setOpenSubmenu(openSubmenu === idx ? null : idx)}
+                                        onClick={() => {
+                                            if (effectiveCollapsed) {
+                                                setCollapsed(false);
+                                                setOpenSubmenu(idx);
+                                            } else {
+                                                setOpenSubmenu(openSubmenu === idx ? null : idx);
+                                            }
+                                        }}
                                         aria-expanded={openSubmenu === idx}
                                     >
                                         <span className={`${!effectiveCollapsed ? 'mr-4' : ''} transition-all duration-300`}>{item.icon}</span>
@@ -195,7 +209,13 @@ const Sidebar = ({ open, setopen }) => {
                             )}
                             {/* Tooltip only on desktop and when collapsed */}
                             {isDesktop && effectiveCollapsed && (
-                                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                <span
+                                    className="fixed z-50 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap"
+                                    style={{
+                                        left: '80px', // 20 * 4px (w-20)
+                                        top: `calc(${idx * 48 + 80}px)`, // 48px per item, 80px for header, adjust as needed
+                                    }}
+                                >
                                     {item.name}
                                 </span>
                             )}
