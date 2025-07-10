@@ -83,6 +83,10 @@ function CategoryList(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
 
+  const handleDelete = (id) => {
+    setData((prevData) => prevData.filter((item) => item.id !== id));
+  };
+
   const filteredData = data.filter(
     (item) =>
       item.category.toLowerCase().includes(search.toLowerCase()) ||
@@ -171,6 +175,7 @@ function CategoryList(props) {
                   <button
                     className="z_catList_actionBtn z_catList_deleteBtn"
                     title="Delete"
+                    onClick={() => handleDelete(item.id)}
                   >
                     <RiDeleteBin5Fill />
                   </button>
