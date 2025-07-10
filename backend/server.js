@@ -1,7 +1,7 @@
-import React from 'react'
+// import React from 'react'
 
-export default function server() {
-  return (
-    <div>server</div>
-  )
-}
+// export default function server() {
+//   return (
+//     <div>server</div>
+//   )
+// }

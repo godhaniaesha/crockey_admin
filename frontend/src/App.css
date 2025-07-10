@@ -1,38 +1,137 @@
-.App {
-  text-align: center;
+/* =======================================================================================================================================================================
+                                                            Login Page
+========================================================================================================================================================================*/
+
+.s_form_imput {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209 213 219);
+  border-radius: 0.375rem;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.s_input_error {
+  color: rgb(239 68 68);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin-top: 0.25rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* ========================================================================================================================================================================
+                                                                  SideBar
+=====================================================================================================================================================================*/
+.mv_sidebar{
+    width: 320px;
+    height: 100%;
+    background-color: #002846;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1020;
+    transition: transform 0.3s ease-in-out;
+}
+.mv_sidebar_logo{
+    color: #fff;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 36.31px;
+    padding: 20px 30px 0 30px;
+}
+.mv_sidebar_menu{
+    margin-top: 40px;
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    left: 16px;
+    width: 100%;
+}
+.mv_menu_item{
+    display: flex;
+    align-items: center;
+    padding: 15px 50px 20px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19.36px;
+    text-align: center;
+}
+.mv_menu_item:hover{
+    background-color: #fff;
+    color: #002846 !important;
+}
+.mv_menu_item img{
+    margin-right: 15px;
+    height: 24px !important;
+    width: 24px !important;
+}
+.mv_menu_toggle{
+    display: none;
+}
+.mv_menu_item.active {
+    background-color: #fff;
+    color: #002846;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+
+
+@media (max-width: 768px){
+    .mv_sidebar{
+        transform: translateX(-100%);
+        position: fixed;
+        top: 80px;
+    }
+    .mv_sidebar.open{
+        transform: translateX(0);
+    }
+    .mv_menu_toggle{
+        width: 56px;
+        height: 40px;
+        display: block;
+        padding: .25rem .75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid ;
+        border-radius: .25rem;
+        color: rgba(0, 0, 0, .5);
+        border-color: rgba(0, 0, 0, .5);
+    }
+    .mv_menu_icon{
+        width: 30px;
+        height: 30px;
+    }
 }
 
-.App-link {
-  color: #61dafb;
+@media (max-width: 425px){
+    .mv_menu_icon{
+        width: 20px;
+        height: 20px;
+    }
+    .mv_menu_toggle{
+        padding: 0px !important;
+        width: 40px;
+        height: 34px;
+    }
+    .mv_bel{
+        width: 30px !important;
+        height: 30px !important;
+    }
+    .mv_bel img {
+        height: 15px;
+        width: 15px;
+    }
+    .mv_notification {
+        padding: 3px !important;
+        font-size: 11px !important;
+        top: 20px !important;
+        right: 179px !important;
+    }
+    .mv_sidebar{
+        width: 250px;
+    }
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@media (max-width: 375px){
 }
