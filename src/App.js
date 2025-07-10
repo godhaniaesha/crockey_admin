@@ -10,6 +10,7 @@ import ProductForm from './Pages/ProductForm';
 import ProductTable from './Pages/ProductTable';
 import Product from './Pages/Product';
 import CategoryList from './Pages/CategoryList';
+import Cart from './Pages/Cart';
 
 function App() {
   return (
@@ -26,6 +27,8 @@ function App() {
           <Route path='product/list' element={<ProductTable />} />
           <Route path='shop/product' element={<Product />} />
           <Route path='category/list' element={<CategoryList />} />
+          <Route path='shop/cart' element={<Cart />} />
+
 
         </Route>
       </Routes>
