@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaCheck } from "react-icons/fa";
 
 const CheckOut = () => {
 
@@ -202,25 +203,26 @@ const CheckOut = () => {
                             <div className="flex justify-between items-start mb-2">
                                 <span className="font-semibold text-gray-700">Shipping</span>
                                 <div className="text-right">
+                                    {/* Styled Radio as Checkbox */}
                                     <div className="space-y-2">
-                                        <label className="flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedShipping.option1}
-                                                onChange={() => handleShippingChange('option1')}
-                                                className="mr-2 w-4 h-4 text-[#1D3C57] bg-gray-100 border-gray-300 rounded "
-                                            />
-                                            <span className="text-sm text-gray-600">Option 1</span>
-                                        </label>
-                                        <label className="flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedShipping.option2}
-                                                onChange={() => handleShippingChange('option2')}
-                                                className="mr-2 w-4 h-4 text-[#1D3C57] bg-gray-100 border-gray-300 rounded "
-                                            />
-                                            <span className="text-sm text-gray-600">Option 2</span>
-                                        </label>
+                                        {['option1', 'option2'].map((option) => (
+                                            <label key={option} className="flex items-center space-x-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="shipping"
+                                                    value={option}
+                                                    checked={selectedShipping === option}
+                                                    onChange={(e) => setSelectedShipping(e.target.value)}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-5 h-5 rounded border border-gray-400 bg-white peer-checked:border-[#254D70] flex items-center justify-center transition-colors duration-200">
+                                                    {selectedShipping === option && (
+                                                        <FaCheck className="w-3 h-3 text-[#254D70]" />
+                                                    )}
+                                                </div>
+                                                <span className="text-sm text-gray-700 capitalize">{option.replace('option', 'Option ')}</span>
+                                            </label>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -235,47 +237,72 @@ const CheckOut = () => {
                         {/* Payment Methods */}
                         <div className="mb-6">
                             <div className="space-y-3">
-                                <label className="flex items-center cursor-pointer p-2 rounded hover:bg-gray-50">
-                                    <input
-                                        type="radio"
-                                        name="payment"
-                                        value="check"
-                                        checked={selectedPayment === 'check'}
-                                        onChange={(e) => setSelectedPayment(e.target.value)}
-                                        className="mr-3 text-[#254D70]"
-                                    />
+                                <label className="flex items-center cursor-pointer p-2 rounded hover:bg-gray-50 space-x-3">
+                                    <span className="relative">
+                                        <input
+                                            type="radio"
+                                            name="payment"
+                                            value="check"
+                                            checked={selectedPayment === 'check'}
+                                            onChange={(e) => setSelectedPayment(e.target.value)}
+                                            className="sr-only"
+                                        />
+                                        <span
+                                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPayment === 'check' ? 'border-[#254D70]' : 'border-blue-100'
+                                                }`}
+                                        >
+                                            {selectedPayment === 'check' && (
+                                                <span className="w-2 h-2 bg-[#254D70] rounded-full" />
+                                            )}
+                                        </span>
+                                    </span>
                                     <span className="text-sm font-medium">Check Payments</span>
                                 </label>
-
-                                <label className="flex items-center cursor-pointer p-2 rounded hover:bg-gray-50">
-                                    <input
-                                        type="radio"
-                                        name="payment"
-                                        value="cod"
-                                        checked={selectedPayment === 'cod'}
-                                        onChange={(e) => setSelectedPayment(e.target.value)}
-                                        className="mr-3 text-[#254D70]"
-                                    />
+                                <label className="flex items-center cursor-pointer p-2 rounded hover:bg-gray-50 space-x-3">
+                                    <span className="relative">
+                                        <input
+                                            type="radio"
+                                            name="payment"
+                                            value="cod"
+                                            checked={selectedPayment === 'cod'}
+                                            onChange={(e) => setSelectedPayment(e.target.value)}
+                                            className="sr-only"
+                                        />
+                                        <span
+                                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPayment === 'cod' ? 'border-[#254D70]' : 'border-blue-100'
+                                                }`}
+                                        >
+                                            {selectedPayment === 'cod' && (
+                                                <span className="w-2 h-2 bg-[#254D70] rounded-full" />
+                                            )}
+                                        </span>
+                                    </span>
                                     <span className="text-sm font-medium">Cash On Delivery</span>
                                 </label>
-
-                                <label className="flex items-center cursor-pointer p-2 rounded hover:bg-gray-50">
-                                    <input
-                                        type="radio"
-                                        name="payment"
-                                        value="paypal"
-                                        checked={selectedPayment === 'paypal'}
-                                        onChange={(e) => setSelectedPayment(e.target.value)}
-                                        className="mr-3 text-[#254D70]"
-                                    />
+                                <label className="flex items-center cursor-pointer p-2 rounded hover:bg-gray-50 space-x-3">
+                                    <span className="relative">
+                                        <input
+                                            type="radio"
+                                            name="payment"
+                                            value="paypal"
+                                            checked={selectedPayment === 'paypal'}
+                                            onChange={(e) => setSelectedPayment(e.target.value)}
+                                            className="sr-only"
+                                        />
+                                        <span
+                                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPayment === 'paypal' ? 'border-[#254D70]' : 'border-blue-100'
+                                                }`}
+                                        >
+                                            {selectedPayment === 'paypal' && (
+                                                <span className="w-2 h-2 bg-[#254D70] rounded-full" />
+                                            )}
+                                        </span>
+                                    </span>
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-sm font-medium">PayPal</span>
                                         <div className="flex space-x-1">
-                                            <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">PP</div>
-                                            <div className="w-8 h-5 bg-red-500 rounded text-white text-xs flex items-center justify-center font-bold">MC</div>
-                                            <div className="w-8 h-5 bg-blue-800 rounded text-white text-xs flex items-center justify-center font-bold">V</div>
-                                            <div className="w-8 h-5 bg-blue-400 rounded text-white text-xs flex items-center justify-center font-bold">M</div>
-                                            <div className="w-8 h-5 bg-blue-300 rounded text-white text-xs flex items-center justify-center font-bold">AE</div>
+                                            <div className="border p-1 "><img src={require('../Image/download.png')} alt="" className="w-10 h-8" /></div>
+                                            <div className="border p-1 "><img src={require('../Image/visa.png')} alt="" className="w-10 h-8" /></div>
+                                            <div className="border p-1 "><img src={require('../Image/master.png')} alt="" className="w-10 h-8" /></div>
                                         </div>
                                     </div>
                                 </label>
