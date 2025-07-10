@@ -10,8 +10,8 @@ export default function Profile() {
     fullName: "",
     email: "",
     mobile: "",
-    gender: "",
     dob: "",
+    gender: "",
   });
 
   const handleImageChange = (e) => {
@@ -26,6 +26,13 @@ export default function Profile() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log("Form submitted:", form);
+    // You can add API call here to save the profile data
   };
 
   return (
@@ -93,6 +100,17 @@ export default function Profile() {
               />
             </div>
             <div className="z_prof_form_group">
+              <label>Date of Birth</label>
+              <input
+                type="date"
+                name="dob"
+                value={form.dob}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div className="z_prof_form_row">
+            <div className="z_prof_form_group" style={{ width: "50%" }}>
               <label>Gender</label>
               <div style={{ display: "flex", gap: "18px", marginTop: "8px" }}>
                 <label style={{ fontWeight: 400 }}>
@@ -127,16 +145,20 @@ export default function Profile() {
                 </label>
               </div>
             </div>
+            <div className="z_prof_form_group" style={{ width: "50%" }}></div>
           </div>
           <div className="z_prof_form_row">
-            <div className="z_prof_form_group">
-              <label>Date of Birth</label>
-              <input
-                type="date"
-                name="dob"
-                value={form.dob}
-                onChange={handleChange}
-              />
+            <div
+              className="z_prof_form_group"
+              style={{ width: "100%", display: "flex", alignItems: "center" }}
+            >
+              <button
+                type="submit"
+                className="z_prof_submit_btn"
+                onClick={handleSubmit}
+              >
+                Submit
+              </button>
             </div>
           </div>
         </form>

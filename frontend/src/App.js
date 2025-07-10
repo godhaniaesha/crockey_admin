@@ -12,7 +12,7 @@ import Product from './Pages/Product';
 import CategoryList from './Pages/CategoryList';
 import ProductDetail from './Pages/ProductDetail.jsx';
 import PrivacyPolicy from './Pages/PrivacyPolicy.jsx';
-import Cart from './Pages/Cart.jsx';
+import Cart from './Pages/Cart.js';
 import SubcategoryList from './Pages/SubcategoryList';
 import OrderList from './Pages/OrderList';
 import CustomerList from './Pages/CustomerList';
@@ -53,7 +53,7 @@ function App() {
           <Route path='customer/list' element={<CustomerList />} />
           <Route path='coupons/list' element={<CouponList />} />
           <Route path='offers/list' element={<OfferList />} />
-          <Route path='profile' element={<Profile />} />
+          <Route path='/profile' element={<Profile />} />
           <Route path='checkOut' element={<CheckOut />} />
 
         </Route>
