@@ -10,7 +10,9 @@ import ProductForm from './Pages/ProductForm';
 import ProductTable from './Pages/ProductTable';
 import Product from './Pages/Product';
 import CategoryList from './Pages/CategoryList';
-import Cart from './Pages/Cart';
+import ProductDetail from './Pages/ProductDetail.jsx';
+import PrivacyPolicy from './Pages/PrivacyPolicy.jsx';
+import Cart from './Pages/Cart.jsx';
 
 function App() {
   return (
@@ -25,10 +27,11 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path='product/add' element={<ProductForm />} />
           <Route path='product/list' element={<ProductTable />} />
+          <Route path='product/detail' element={<ProductDetail />} />
           <Route path='shop/product' element={<Product />} />
           <Route path='category/list' element={<CategoryList />} />
-          <Route path='shop/cart' element={<Cart />} />
-
+          <Route path='privacy_policy' element={<PrivacyPolicy></PrivacyPolicy>} />
+          <Route path='shop/cart' element={<Cart></Cart>} />
 
         </Route>
       </Routes>
