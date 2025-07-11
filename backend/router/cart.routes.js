@@ -9,20 +9,15 @@ const {
     addOrUpdateProduct,
     removeProduct
 } = require('../controller/cart.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-// Create
-router.post('/', createCart);
-// Read all
-router.get('/', getAllCarts);
-// Read one
-router.get('/:id', getCartById);
-// Update
-router.put('/:id', updateCart);
-// Delete
-router.delete('/:id', deleteCart);
-// Add or update product in cart
-router.post('/add-or-update', addOrUpdateProduct);
-// Remove product from cart
-router.post('/remove', removeProduct);
+// All cart routes require user authentication
+router.post('/', authenticateToken, createCart);
+router.get('/', authenticateToken, getAllCarts);
+router.get('/:id', authenticateToken, getCartById);
+router.put('/:id', authenticateToken, updateCart);
+router.delete('/:id', authenticateToken, deleteCart);
+router.post('/add-or-update', authenticateToken, addOrUpdateProduct);
+router.post('/remove', authenticateToken, removeProduct);
 
 module.exports = router; 

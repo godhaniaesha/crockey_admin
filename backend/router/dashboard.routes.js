@@ -8,12 +8,14 @@ const {
     recentActivities,
     salesTarget
 } = require('../controller/dashboard.controller');
+const { requireAdmin } = require('../middleware/auth.middleware');
 
-router.get('/summary', summary);
-router.get('/sales-overview', salesOverview);
-router.get('/category-distribution', categoryDistribution);
-router.get('/top-products', topProducts);
-router.get('/recent-activities', recentActivities);
-router.get('/sales-target', salesTarget);
+// All dashboard routes require admin access
+router.get('/summary', requireAdmin, summary);
+router.get('/sales-overview', requireAdmin, salesOverview);
+router.get('/category-distribution', requireAdmin, categoryDistribution);
+router.get('/top-products', requireAdmin, topProducts);
+router.get('/recent-activities', requireAdmin, recentActivities);
+router.get('/sales-target', requireAdmin, salesTarget);
 
 module.exports = router; 

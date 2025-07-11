@@ -11,6 +11,10 @@ const categorySchema = mongoose.Schema({
     },
     image: {
         type: String // stores uploaded image filename
+    },
+    active: {
+        type: Boolean,
+        default: true
     }
 }, { timestamps: true });
 

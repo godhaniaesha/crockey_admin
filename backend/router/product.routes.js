@@ -8,6 +8,12 @@ const {
     deleteProduct,
     getLowStockProducts
 } = require('../controller/product.controller');
+const { 
+    requireAdmin, 
+    requireAdminOrSeller, 
+    requireSellerOwnership,
+    authenticateToken 
+} = require('../middleware/auth.middleware');
 const multer = require('multer');
 const path = require('path');
 
@@ -21,17 +27,22 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Create
-router.post('/', upload.array('images',5), createProduct); // up to 5 images
-// Read all
+// Create product (admin or seller only)
+router.post('/', requireAdminOrSeller, upload.array('images',5), createProduct);
+
+// Read all products (public access)
 router.get('/', getAllProducts);
-// Read one
+
+// Read one product (public access)
 router.get('/:id', getProductById);
-// Update
-router.put('/:id', upload.array('images',5), updateProduct);
-// Delete
-router.delete('/:id', deleteProduct);
-// Get low stock products
-router.get('/low-stock', getLowStockProducts);
+
+// Update product (admin or seller with ownership)
+router.put('/:id', requireAdminOrSeller, requireSellerOwnership, upload.array('images',5), updateProduct);
+
+// Delete product (admin or seller with ownership)
+router.delete('/:id', requireAdminOrSeller, requireSellerOwnership, deleteProduct);
+
+// Get low stock products (admin only)
+router.get('/low-stock', requireAdmin, getLowStockProducts);
 
 module.exports = router; 

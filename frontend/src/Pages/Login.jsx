@@ -60,12 +60,16 @@ console.log("BaseUrl????????",BaseUrl);
   const registerInitialValues = {
     username: "",
     email: "",
+    mobileNumber: "",
     password: "",
     confirmPassword: "",
   };
   const registerValidationSchema = Yup.object({
     username: Yup.string().required("Name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
+    mobileNumber: Yup.string()
+      .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+      .required("Mobile number is required"),
     password: Yup.string()
       .min(6, "Minimum 6 characters")
       .required("Password is required"),
@@ -220,6 +224,19 @@ console.log("BaseUrl????????",BaseUrl);
                     />
                     <ErrorMessage
                       name="email"
+                      component="div"
+                      className="s_input_error mt-1 text-xs md:text-sm"
+                    />
+                  </div>
+                  <div className="mb-3 md:mb-5">
+                    <Field
+                      type="tel"
+                      name="mobileNumber"
+                      placeholder="Mobile number (10 digits)"
+                      className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
+                    />
+                    <ErrorMessage
+                      name="mobileNumber"
                       component="div"
                       className="s_input_error mt-1 text-xs md:text-sm"
                     />

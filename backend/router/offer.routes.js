@@ -7,16 +7,13 @@ const {
     updateOffer,
     deleteOffer
 } = require('../controller/offer.controller');
+const { requireAdmin } = require('../middleware/auth.middleware');
 
-// Create
-router.post('/', createOffer);
-// Read all
-router.get('/', getAllOffers);
-// Read one
-router.get('/:id', getOfferById);
-// Update
-router.put('/:id', updateOffer);
-// Delete
-router.delete('/:id', deleteOffer);
+// All offer management routes require admin access
+router.post('/', requireAdmin, createOffer);
+router.get('/', getAllOffers); // Public access for viewing offers
+router.get('/:id', getOfferById); // Public access for viewing offer
+router.put('/:id', requireAdmin, updateOffer);
+router.delete('/:id', requireAdmin, deleteOffer);
 
 module.exports = router; 

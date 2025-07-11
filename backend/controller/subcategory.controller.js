@@ -5,7 +5,8 @@ exports.createSubcategory = async (req, res) => {
     try {
         const subcategoryData = {
             ...req.body,
-            image: req.file ? req.file.filename : undefined
+            image: req.file ? req.file.filename : undefined,
+            active: req.body.active !== undefined ? req.body.active : true
         };
         const subcategory = new Subcategory(subcategoryData);
         const savedSubcategory = await subcategory.save();
@@ -15,10 +16,24 @@ exports.createSubcategory = async (req, res) => {
     }
 };
 
-// Get all subcategories
+// Get all subcategories (with optional active filter)
 exports.getAllSubcategories = async (req, res) => {
     try {
-        const subcategories = await Subcategory.find().populate('category_id');
+        const filter = {};
+        if (req.query.active !== undefined) {
+            filter.active = req.query.active === 'true';
+        }
+        const subcategories = await Subcategory.find(filter).populate('category_id');
+        res.status(200).json(subcategories);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Get active subcategories only
+exports.getActiveSubcategories = async (req, res) => {
+    try {
+        const subcategories = await Subcategory.find({ active: true }).populate('category_id');
         res.status(200).json(subcategories);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -52,6 +67,26 @@ exports.updateSubcategory = async (req, res) => {
             return res.status(404).json({ error: 'Subcategory not found' });
         }
         res.status(200).json(updatedSubcategory);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Toggle subcategory active status
+exports.toggleSubcategoryStatus = async (req, res) => {
+    try {
+        const subcategory = await Subcategory.findById(req.params.id);
+        if (!subcategory) {
+            return res.status(404).json({ error: 'Subcategory not found' });
+        }
+        
+        subcategory.active = !subcategory.active;
+        await subcategory.save();
+        
+        res.status(200).json({
+            message: `Subcategory ${subcategory.active ? 'activated' : 'deactivated'} successfully`,
+            subcategory
+        });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

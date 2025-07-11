@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { AuthController } = require('../controller');
+const { 
+    authenticateToken, 
+    requireAdmin, 
+    requireSeller, 
+    requireUser,
+    requireOwnership 
+} = require('../middleware/auth.middleware');
 const multer = require('multer');
 const path = require('path');
 
@@ -46,34 +53,34 @@ router.post('/verify-password-reset-otp', AuthController.verifyPasswordResetOTP)
 // Reset password after OTP verification
 router.post('/reset-password', AuthController.resetPassword);
 
-// Change user profile
-router.put('/change-profile/:userId', upload.single('profileImage'), AuthController.changeProfile);
+// Change user profile (requires authentication and ownership)
+router.put('/change-profile/:userId', authenticateToken, requireOwnership, upload.single('profileImage'), AuthController.changeProfile);
 
-// Logout user
-router.post('/logout', AuthController.logoutUser);
+// Logout user (requires authentication)
+router.post('/logout', authenticateToken, AuthController.logoutUser);
 
 // Generate new token (refresh token)
 router.post('/refresh-token', AuthController.generateNewToken);
 
 // Check authentication
-router.get('/check-auth', AuthController.authnticateCheck);
+router.get('/check-auth', authenticateToken, AuthController.authnticateCheck);
 
-// ==================== USER MANAGEMENT ROUTES ====================
+// ==================== USER MANAGEMENT ROUTES (ADMIN ONLY) ====================
 
-// Get all users
-router.get('/users', AuthController.getAllUsers);
+// Get all users (admin only)
+router.get('/users', requireAdmin, AuthController.getAllUsers);
 
-// Get user by ID
-router.get('/users/:id', AuthController.getUserById);
+// Get user by ID (admin only)
+router.get('/users/:id', requireAdmin, AuthController.getUserById);
 
-// Update user
-router.put('/users/:id', upload.single('profileImage'), AuthController.updateUser);
+// Update user (admin only)
+router.put('/users/:id', requireAdmin, upload.single('profileImage'), AuthController.updateUser);
 
-// Delete user
-router.delete('/users/:id', AuthController.deleteUser);
+// Delete user (admin only)
+router.delete('/users/:id', requireAdmin, AuthController.deleteUser);
 
 // Create user (admin function)
-router.post('/create-user', upload.single('profileImage'), AuthController.createUser);
+router.post('/create-user', requireAdmin, upload.single('profileImage'), AuthController.createUser);
 
 // ==================== SELLER REGISTRATION ROUTES ====================
 
@@ -101,8 +108,8 @@ router.post('/add-pickup-address', AuthController.addPickupAddress);
 // Accept terms and conditions
 router.post('/accept-terms', AuthController.acceptTermsAndConditions);
 
-// Get seller registration progress
-router.get('/seller-progress/:userId', AuthController.getSellerRegistrationProgress);
+// Get seller registration progress (requires authentication and ownership)
+router.get('/seller-progress/:userId', authenticateToken, requireOwnership, AuthController.getSellerRegistrationProgress);
 
 // ==================== ERROR HANDLING MIDDLEWARE ====================
 

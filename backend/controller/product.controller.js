@@ -1,11 +1,26 @@
 const Product = require('../model/product.model');
+const Category = require('../model/category.model');
+const Subcategory = require('../model/subcategory.model');
 
 // Create a new product
 exports.createProduct = async (req, res) => {
     try {
+        // Check if category and subcategory are active
+        const category = await Category.findById(req.body.category_id);
+        const subcategory = await Subcategory.findById(req.body.subcategory_id);
+        
+        if (!category || !category.active) {
+            return res.status(400).json({ error: 'Category is not active' });
+        }
+        
+        if (!subcategory || !subcategory.active) {
+            return res.status(400).json({ error: 'Subcategory is not active' });
+        }
+        
         const productData = {
             ...req.body,
-            images: req.files ? req.files.map(f => f.filename) : []
+            images: req.files ? req.files.map(f => f.filename) : [],
+            active: req.body.active !== undefined ? req.body.active : true
         };
         const product = new Product(productData);
         const savedProduct = await product.save();
@@ -15,14 +30,50 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-// Get all products
+// Get all products (only active ones by default)
 exports.getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find()
+        const filter = {};
+        
+        // Only show active products by default
+        if (req.query.active === undefined) {
+            filter.active = true;
+        } else if (req.query.active !== undefined) {
+            filter.active = req.query.active === 'true';
+        }
+        
+        const products = await Product.find(filter)
             .populate('user_id')
             .populate('category_id')
             .populate('subcategory_id');
-        res.status(200).json(products);
+        
+        // Filter products where category and subcategory are active
+        const filteredProducts = products.filter(product => {
+            return product.category_id && product.category_id.active && 
+                   product.subcategory_id && product.subcategory_id.active;
+        });
+        
+        res.status(200).json(filteredProducts);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Get active products only (for public display)
+exports.getActiveProducts = async (req, res) => {
+    try {
+        const products = await Product.find({ active: true })
+            .populate('user_id')
+            .populate('category_id')
+            .populate('subcategory_id');
+        
+        // Filter products where category and subcategory are active
+        const activeProducts = products.filter(product => {
+            return product.category_id && product.category_id.active && 
+                   product.subcategory_id && product.subcategory_id.active;
+        });
+        
+        res.status(200).json(activeProducts);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -49,6 +100,22 @@ exports.updateProduct = async (req, res) => {
         if (req.files && req.files.length > 0) {
             updateData.images = req.files.map(f => f.filename);
         }
+        
+        // Check if category and subcategory are active when updating
+        if (req.body.category_id) {
+            const category = await Category.findById(req.body.category_id);
+            if (!category || !category.active) {
+                return res.status(400).json({ error: 'Category is not active' });
+            }
+        }
+        
+        if (req.body.subcategory_id) {
+            const subcategory = await Subcategory.findById(req.body.subcategory_id);
+            if (!subcategory || !subcategory.active) {
+                return res.status(400).json({ error: 'Subcategory is not active' });
+            }
+        }
+        
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
             { $set: updateData },
@@ -58,6 +125,26 @@ exports.updateProduct = async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
         res.status(200).json(updatedProduct);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Toggle product active status
+exports.toggleProductStatus = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        
+        product.active = !product.active;
+        await product.save();
+        
+        res.status(200).json({
+            message: `Product ${product.active ? 'activated' : 'deactivated'} successfully`,
+            product
+        });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

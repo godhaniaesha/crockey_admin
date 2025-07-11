@@ -22,6 +22,42 @@ const registerSchema = mongoose.Schema({
         type: String,
         enum: ["admin", "seller", "user"],
         default: "user"
+    },
+    profileImage: {
+        type: String,
+        default: ""
+    },
+    // Seller income tracking
+    income: {
+        type: Number,
+        default: 0
+    },
+    withdrawn: {
+        type: Number,
+        default: 0
+    },
+    bankDetails: {
+        accountHolder: String,
+        accountNumber: String,
+        bankName: String,
+        ifscCode: String
+    },
+    // OTP fields for password reset
+    resetPasswordOTP: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpiry: {
+        type: Date,
+        default: null
+    },
+    otpVerified: {
+        type: Boolean,
+        default: false
+    },
+    refreshToken: {
+        type: String,
+        default: null
     }
 }, { timestamps: true })
 

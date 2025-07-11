@@ -7,16 +7,13 @@ const {
     updateCoupon,
     deleteCoupon
 } = require('../controller/coupon.controller');
+const { requireAdmin } = require('../middleware/auth.middleware');
 
-// Create
-router.post('/', createCoupon);
-// Read all
-router.get('/', getAllCoupons);
-// Read one
-router.get('/:id', getCouponById);
-// Update
-router.put('/:id', updateCoupon);
-// Delete
-router.delete('/:id', deleteCoupon);
+// All coupon management routes require admin access
+router.post('/', requireAdmin, createCoupon);
+router.get('/', getAllCoupons); // Public access for viewing coupons
+router.get('/:id', getCouponById); // Public access for viewing coupon
+router.put('/:id', requireAdmin, updateCoupon);
+router.delete('/:id', requireAdmin, deleteCoupon);
 
 module.exports = router; 

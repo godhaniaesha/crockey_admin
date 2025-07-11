@@ -146,16 +146,21 @@ const forgotPassword = async (req, res) => {
 
         // Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000);
-        console.log("OTP for password reset:", otp);
+        console.log("Generated OTP for password reset:", otp);
+        console.log("User email:", email);
 
         // Save OTP to user document with expiry (10 minutes)
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-        await Register.findByIdAndUpdate(user._id, {
+        const updatedUser = await Register.findByIdAndUpdate(user._id, {
             $set: {
-                resetPasswordOTP: otp,
-                resetPasswordExpiry: otpExpiry
+                resetPasswordOTP: otp.toString(),
+                resetPasswordExpiry: otpExpiry,
+                otpVerified: false
             }
-        });
+        }, { new: true });
+
+        console.log("Updated user with OTP:", updatedUser.resetPasswordOTP);
+        console.log("OTP expiry:", updatedUser.resetPasswordExpiry);
 
         // Send OTP via SMS if phone number exists
         if (user.phone_number) {
@@ -218,8 +223,13 @@ const verifyPasswordResetOTP = async (req, res) => {
             });
         }
 
+        console.log("User found:", user.email);
+        console.log("Stored OTP:", user.resetPasswordOTP);
+        console.log("Received OTP:", otp);
+        console.log("OTP Expiry:", user.resetPasswordExpiry);
+
         // Check if OTP exists and is not expired
-        if (!user.resetPasswordOTP || !user.resetPasswordExpiry) {
+        if (!user.resetPasswordOTP) {
             return res.status(400).json({
                 success: false,
                 message: "No OTP found. Please request a new OTP."
@@ -227,15 +237,23 @@ const verifyPasswordResetOTP = async (req, res) => {
         }
 
         // Check if OTP is expired
-        if (new Date() > new Date(user.resetPasswordExpiry)) {
+        if (user.resetPasswordExpiry && new Date() > new Date(user.resetPasswordExpiry)) {
             return res.status(400).json({
                 success: false,
                 message: "OTP has expired. Please request a new OTP."
             });
         }
 
-        // Verify OTP
-        if (user.resetPasswordOTP.toString() !== otp.toString()) {
+        // Verify OTP - convert both to strings for comparison
+        const storedOTP = user.resetPasswordOTP.toString();
+        const receivedOTP = otp.toString();
+        
+        console.log("Comparing OTPs:");
+        console.log("Stored OTP (string):", storedOTP);
+        console.log("Received OTP (string):", receivedOTP);
+        console.log("Are they equal?", storedOTP === receivedOTP);
+
+        if (storedOTP !== receivedOTP) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid OTP"

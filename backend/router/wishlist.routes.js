@@ -9,20 +9,15 @@ const {
     addProduct,
     removeProduct
 } = require('../controller/wishlist.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-// Create
-router.post('/', createWishlist);
-// Read all
-router.get('/', getAllWishlists);
-// Read one
-router.get('/:id', getWishlistById);
-// Update
-router.put('/:id', updateWishlist);
-// Delete
-router.delete('/:id', deleteWishlist);
-// Add product to wishlist
-router.post('/add', addProduct);
-// Remove product from wishlist
-router.post('/remove', removeProduct);
+// All wishlist routes require user authentication
+router.post('/', authenticateToken, createWishlist);
+router.get('/', authenticateToken, getAllWishlists);
+router.get('/:id', authenticateToken, getWishlistById);
+router.put('/:id', authenticateToken, updateWishlist);
+router.delete('/:id', authenticateToken, deleteWishlist);
+router.post('/add', authenticateToken, addProduct);
+router.post('/remove', authenticateToken, removeProduct);
 
 module.exports = router; 

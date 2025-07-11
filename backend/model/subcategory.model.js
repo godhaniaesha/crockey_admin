@@ -3,19 +3,22 @@ const mongoose = require('mongoose');
 const subcategorySchema = mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     description: {
         type: String
     },
+    category_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true
+    },
     image: {
         type: String // stores uploaded image filename
     },
-    category_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: true
+    active: {
+        type: Boolean,
+        default: true
     }
 }, { timestamps: true });
 
