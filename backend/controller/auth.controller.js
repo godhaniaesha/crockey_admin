@@ -159,6 +159,8 @@ const forgotPassword = async (req, res) => {
 
         // Send OTP via SMS if phone number exists
         if (user.phone_number) {
+            console.log("user.phone_number",user.phone_number);
+            
             try {
                 const client = twilioConfig.getClient();
                 const formattedPhone = user.phone_number.startsWith('+91') ? user.phone_number : `+91${user.phone_number}`;
