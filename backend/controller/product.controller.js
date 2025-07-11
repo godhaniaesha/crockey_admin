@@ -1,6 +1,19 @@
 const Product = require('../model/product.model');
 const Category = require('../model/category.model');
 const Subcategory = require('../model/subcategory.model');
+x
+// Helper to add discountPrice to product(s)
+function addDiscountPrice(product) {
+    if (!product) return product;
+    const p = product.toObject ? product.toObject() : { ...product };
+    const price = p.price || 0;
+    const discount = p.discount || 0;
+    p.discountPrice = price - (price * discount / 100);
+    return p;
+}
+function addDiscountPriceToArray(products) {
+    return products.map(addDiscountPrice);
+}
 
 // Create a new product
 exports.createProduct = async (req, res) => {
@@ -24,7 +37,7 @@ exports.createProduct = async (req, res) => {
         };
         const product = new Product(productData);
         const savedProduct = await product.save();
-        res.status(201).json(savedProduct);
+        res.status(201).json(addDiscountPrice(savedProduct));
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -53,7 +66,7 @@ exports.getAllProducts = async (req, res) => {
                    product.subcategory_id && product.subcategory_id.active;
         });
         
-        res.status(200).json(filteredProducts);
+        res.status(200).json(addDiscountPriceToArray(filteredProducts));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -73,7 +86,7 @@ exports.getActiveProducts = async (req, res) => {
                    product.subcategory_id && product.subcategory_id.active;
         });
         
-        res.status(200).json(activeProducts);
+        res.status(200).json(addDiscountPriceToArray(activeProducts));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -87,7 +100,7 @@ exports.getProductById = async (req, res) => {
             .populate('category_id')
             .populate('subcategory_id');
         if (!product) return res.status(404).json({ error: 'Product not found' });
-        res.status(200).json(product);
+        res.status(200).json(addDiscountPrice(product));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -124,7 +137,7 @@ exports.updateProduct = async (req, res) => {
         if (!updatedProduct) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        res.status(200).json(updatedProduct);
+        res.status(200).json(addDiscountPrice(updatedProduct));
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -143,7 +156,7 @@ exports.toggleProductStatus = async (req, res) => {
         
         res.status(200).json({
             message: `Product ${product.active ? 'activated' : 'deactivated'} successfully`,
-            product
+            product: addDiscountPrice(product)
         });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -176,7 +189,7 @@ exports.getLowStockProducts = async (req, res) => {
             .populate('subcategory_id');
         // Filter by each product's lowstock value
         const lowStockProducts = products.filter(p => p.stock <= (p.lowstock || 5));
-        res.status(200).json(lowStockProducts);
+        res.status(200).json(addDiscountPriceToArray(lowStockProducts));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
