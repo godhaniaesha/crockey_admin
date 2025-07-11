@@ -2,8 +2,8 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../style/z_style.css";
-import { Link } from "react-router-dom";
 import * as Yup from "yup";
+import axios from 'axios';
 
 const PasswordField = ({ name, placeholder, className }) => {
   const [show, setShow] = useState(false);
@@ -33,7 +33,10 @@ const PasswordField = ({ name, placeholder, className }) => {
 };
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
+
+  const BaseUrl = process.env.REACT_APP_BASEURL;
+console.log("BaseUrl????????",BaseUrl);
+
   const [formType, setFormType] = useState("login"); // 'login', 'register', 'forgot', 'otp', 'reset'
   // Remove showRegisterModal state
 
@@ -55,13 +58,13 @@ const Login = () => {
 
   // Register form state
   const registerInitialValues = {
-    name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
   };
   const registerValidationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
+    username: Yup.string().required("Name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     password: Yup.string()
       .min(6, "Minimum 6 characters")
@@ -71,8 +74,17 @@ const Login = () => {
       .required("Confirm password is required"),
   });
   const handleRegister = async (values) => {
-    // await registration API call here
-    setFormType("login");
+    // console.log("values>>>>>>>",values);
+    
+    try {
+      const response = await axios.post(`${BaseUrl}/api/auth/register`, values);
+      console.log("response?>>>>>>>>",response.data);
+      if(response.data.success === true) {
+        setFormType("login");
+      }
+    } catch (error) {
+        console.error('User register Error:',error); 
+    }
   };
 
   // Forgot password form state
@@ -189,7 +201,7 @@ const Login = () => {
                   <div className="mb-3 md:mb-5">
                     <Field
                       type="text"
-                      name="name"
+                      name="username"
                       placeholder="Full Name"
                       className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
                     />
