@@ -3,7 +3,11 @@ const Subcategory = require('../model/subcategory.model');
 // Create a new subcategory
 exports.createSubcategory = async (req, res) => {
     try {
-        const subcategory = new Subcategory(req.body);
+        const subcategoryData = {
+            ...req.body,
+            image: req.file ? req.file.filename : undefined
+        };
+        const subcategory = new Subcategory(subcategoryData);
         const savedSubcategory = await subcategory.save();
         res.status(201).json(savedSubcategory);
     } catch (error) {
@@ -35,12 +39,18 @@ exports.getSubcategoryById = async (req, res) => {
 // Update a subcategory by ID
 exports.updateSubcategory = async (req, res) => {
     try {
+        const updateData = { ...req.body };
+        if (req.file) {
+            updateData.image = req.file.filename;
+        }
         const updatedSubcategory = await Subcategory.findByIdAndUpdate(
             req.params.id,
-            req.body,
-            { new: true }
-        ).populate('category_id');
-        if (!updatedSubcategory) return res.status(404).json({ error: 'Subcategory not found' });
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+        if (!updatedSubcategory) {
+            return res.status(404).json({ error: 'Subcategory not found' });
+        }
         res.status(200).json(updatedSubcategory);
     } catch (error) {
         res.status(400).json({ error: error.message });

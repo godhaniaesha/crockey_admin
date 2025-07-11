@@ -177,7 +177,8 @@ const forgotPassword = async (req, res) => {
                 console.error("Twilio Error:", twilioError);
                 return res.status(500).json({
                     success: false,
-                    message: "Failed to send OTP via SMS"
+                    message: "Failed to send OTP via SMS",
+                    error: twilioError.message || twilioError
                 });
             }
         } else {

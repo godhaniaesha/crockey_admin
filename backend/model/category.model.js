@@ -10,7 +10,7 @@ const categorySchema = mongoose.Schema({
         type: String
     },
     image: {
-        type: String
+        type: String // stores uploaded image filename
     }
 }, { timestamps: true });
 

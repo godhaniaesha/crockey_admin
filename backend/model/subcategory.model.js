@@ -10,7 +10,7 @@ const subcategorySchema = mongoose.Schema({
         type: String
     },
     image: {
-        type: String
+        type: String // stores uploaded image filename
     },
     category_id: {
         type: mongoose.Schema.Types.ObjectId,

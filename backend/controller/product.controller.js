@@ -3,7 +3,11 @@ const Product = require('../model/product.model');
 // Create a new product
 exports.createProduct = async (req, res) => {
     try {
-        const product = new Product(req.body);
+        const productData = {
+            ...req.body,
+            images: req.files ? req.files.map(f => f.filename) : []
+        };
+        const product = new Product(productData);
         const savedProduct = await product.save();
         res.status(201).json(savedProduct);
     } catch (error) {
@@ -41,16 +45,18 @@ exports.getProductById = async (req, res) => {
 // Update a product by ID
 exports.updateProduct = async (req, res) => {
     try {
-        const updateData = req.body;
+        const updateData = { ...req.body };
+        if (req.files && req.files.length > 0) {
+            updateData.images = req.files.map(f => f.filename);
+        }
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
-            updateData,
-            { new: true }
-        )
-            .populate('user_id')
-            .populate('category_id')
-            .populate('subcategory_id');
-        if (!updatedProduct) return res.status(404).json({ error: 'Product not found' });
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+        if (!updatedProduct) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
         res.status(200).json(updatedProduct);
     } catch (error) {
         res.status(400).json({ error: error.message });

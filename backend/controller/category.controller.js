@@ -3,7 +3,12 @@ const Category = require('../model/category.model');
 // Create a new category
 exports.createCategory = async (req, res) => {
     try {
-        const category = new Category(req.body);
+        // Support form-data: req.body for text, req.file for image
+        const categoryData = {
+            ...req.body,
+            image: req.file ? req.file.filename : undefined
+        };
+        const category = new Category(categoryData);
         const savedCategory = await category.save();
         res.status(201).json(savedCategory);
     } catch (error) {
@@ -35,12 +40,18 @@ exports.getCategoryById = async (req, res) => {
 // Update a category by ID
 exports.updateCategory = async (req, res) => {
     try {
+        const updateData = { ...req.body };
+        if (req.file) {
+            updateData.image = req.file.filename;
+        }
         const updatedCategory = await Category.findByIdAndUpdate(
             req.params.id,
-            req.body,
-            { new: true }
+            { $set: updateData },
+            { new: true, runValidators: true }
         );
-        if (!updatedCategory) return res.status(404).json({ error: 'Category not found' });
+        if (!updatedCategory) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
         res.status(200).json(updatedCategory);
     } catch (error) {
         res.status(400).json({ error: error.message });
