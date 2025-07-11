@@ -1,19 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
 import '../style/d_style.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createSubcategory, fetchSubcategories, updateSubcategory } from '../redux/slice/subcat.slice.jsx';
+import { fetchCategories } from '../redux/slice/category.slice';
 
 const SubCategoryForm = () => {
-    const [form, setForm] = useState({ category: '', subCategoryName: '', description: '', status: 'Active', });
+    const [form, setForm] = useState({ category_id: '', name: '', description: '', status: 'Active' });
     const [images, setImages] = useState([]);
     const [dragActive, setDragActive] = useState(false);
     const inputRef = useRef(null);
     const [categoryOpen, setCategoryOpen] = useState(false);
-    const categoryOptions = [
-        'Crockery',
-        'Cutlery',
-        'Glassware',
-        'Other',
-    ];
     const categoryRef = useRef(null);
+    const { categories } = useSelector(state => state.category);
+    const safeCategories = Array.isArray(categories?.result)
+        ? categories.result
+        : Array.isArray(categories)
+            ? categories
+            : [];
+    const { id } = useParams();
+    const { subcategories } = useSelector(state => state.subcategory);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -74,10 +80,53 @@ const SubCategoryForm = () => {
         inputRef.current.click();
     };
 
-    const handleSubmit = (e) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        dispatch(fetchCategories());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (id && subcategories && subcategories.length > 0) {
+            const subcat = subcategories.find(sc => sc._id === id || sc.subcat_id === id);
+            if (subcat) {
+                setForm({
+                    category_id: subcat.category_id?._id || subcat.category_id || '',
+                    name: subcat.name || '',
+                    description: subcat.description || '',
+                    status: subcat.status === 'Active' || subcat.status === true,
+                });
+                if (subcat.image) {
+                    setImages([{ file: null, url: `http://localhost:5000/uploads/${subcat.image}` }]);
+                }
+            }
+        }
+    }, [id, subcategories]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission logic here
-        alert('SubCategory Added!');
+        const formData = new FormData();
+        formData.append('name', form.name);
+        formData.append('description', form.description);
+        formData.append('status', form.status ? 'Active' : 'Inactive');
+        formData.append('category_id', form.category_id);
+        if (images.length > 0 && images[0].file) {
+            formData.append('image', images[0].file);
+        }
+        try {
+            if (id) {
+                await dispatch(updateSubcategory({ id, formData })).unwrap();
+                alert('SubCategory Updated!');
+            } else {
+                await dispatch(createSubcategory(formData)).unwrap();
+                alert('SubCategory Added!');
+            }
+            dispatch(fetchSubcategories());
+            navigate('/subcategory/list');
+        } catch (error) {
+            alert(error);
+        }
     };
 
     return (
@@ -136,25 +185,25 @@ const SubCategoryForm = () => {
                                 role="button"
                             >
                                 <div className="d_MP-dropdown-selected">
-                                    {form.category || 'Select category'}
+                                    {form.category_id ? categories.result.find(cat => cat._id === form.category_id)?.name : 'Select category'}
                                     <span className="d_MP-dropdown-arrow">▼</span>
                                 </div>
                                 {categoryOpen && (
                                     <ul className="d_MP-dropdown-list" role="listbox">
-                                        {categoryOptions.map((option) => (
+                                        {safeCategories.map((option) => (
                                             <li
-                                                key={option}
-                                                className={`d_MP-dropdown-option${form.category === option ? ' selected' : ''}`}
+                                                key={option._id}
+                                                className={`d_MP-dropdown-option${form.category_id === option._id ? ' selected' : ''}`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setForm({ ...form, category: option });
+                                                    setForm({ ...form, category_id: option._id });
                                                     setCategoryOpen(false);
                                                 }}
                                                 role="option"
-                                                aria-selected={form.category === option}
+                                                aria-selected={form.category_id === option._id}
                                                 tabIndex={-1}
                                             >
-                                                {option}
+                                                {option.name}
                                             </li>
                                         ))}
                                     </ul>
@@ -214,7 +263,9 @@ const SubCategoryForm = () => {
 
 
                 <div className='w-full flex justify-center'>
-                    <button type="submit" className="d_MP-btn w-auto bg-[#254D70] text-white py-3 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition">Add SubCategory</button>
+                    <button type="submit" className="d_MP-btn w-auto bg-[#254D70] text-white py-3 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition">
+                        {id ? "Update SubCategory" : "Add SubCategory"}
+                    </button>
 
                 </div>
             </form>

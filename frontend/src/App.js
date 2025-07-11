@@ -56,6 +56,11 @@ function App() {
           <Route path='/profile' element={<Profile />} />
           <Route path='checkOut' element={<CheckOut />} />
 
+          {/* edit */}
+          <Route path="/edit-category/:id" element={<CategoryForm />} />
+          <Route path="product/edit/:id" element={<ProductForm />} />
+          <Route path="/edit-subcategory/:id" element={<SubCategoryForm />} />
+
         </Route>
       </Routes>
     </BrowserRouter>
