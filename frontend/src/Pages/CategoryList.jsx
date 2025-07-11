@@ -1,96 +1,75 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCategories, deleteCategory } from "../redux/slice/category.slice";
 import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
+import { useNavigate } from "react-router-dom";
 
-const sampleData = [
-  {
-    id: 1,
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    category: "Plates",
-    description: "Various sizes of dinner and side plates.",
-    status: true,
-  },
-  {
-    id: 2,
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80",
-    category: "Bowls",
-    description: "Soup, salad, and serving bowls.",
-    status: false,
-  },
-  {
-    id: 3,
-    img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=100&q=80",
-    category: "Cups & Mugs",
-    description: "Tea cups, coffee mugs, and more.",
-    status: true,
-  },
-  {
-    id: 4,
-    img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=100&q=80",
-    category: "Glasses",
-    description: "Drinking glasses for water, juice, and beverages.",
-    status: false,
-  },
-  {
-    id: 5,
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    category: "Spoons & Cutlery",
-    description: "Spoons, forks, knives, and serving utensils.",
-    status: true,
-  },
-  {
-    id: 6,
-    img: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=100&q=80",
-    category: "Serving Dishes",
-    description: "Platters, trays, and serving bowls.",
-    status: true,
-  },
-  {
-    id: 7,
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    category: "Tea Sets",
-    description: "Complete tea sets for serving guests.",
-    status: false,
-  },
-  {
-    id: 8,
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    category: "Jugs & Pitchers",
-    description: "Water jugs and beverage pitchers.",
-    status: true,
-  },
-  {
-    id: 9,
-    img: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=100&q=80",
-    category: "Baking Dishes",
-    description: "Oven-safe dishes for baking.",
-    status: false,
-  },
-  {
-    id: 10,
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    category: "Storage Containers",
-    description: "Containers for storing leftovers and ingredients.",
-    status: true,
-  },
-];
+// Sample data for fallback
+const sampleData = [];
 
 const ITEMS_PER_PAGE = 10; // You can change this as needed
 
 function CategoryList(props) {
-  const [data, setData] = useState(sampleData);
+  const dispatch = useDispatch();
+  const categoryState = useSelector((state) => state?.category);
+  const { categories = [], loading = false, error = null } = categoryState || {};
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
 
-  const handleDelete = (id) => {
-    setData((prevData) => prevData.filter((item) => item.id !== id));
+  const navigate = useNavigate();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+
+  const openDeleteModal = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
   };
 
-  const filteredData = data.filter(
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  };
+
+  const confirmDelete = () => {
+    handleDelete(deleteId);
+    closeDeleteModal();
+  };
+
+  // Debug logging
+  console.log('Category State:', categoryState.categories);
+  console.log('Categories:', categories);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    console.log('Dispatching fetchCategories...');
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      dispatch(deleteCategory(id));
+    }
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/edit-category/${id}`);
+  };
+
+  // Always use the array for rendering
+  const safeCategories = Array.isArray(categories?.result)
+    ? categories.result
+    : Array.isArray(categories)
+      ? categories
+      : [];
+  
+  const filteredData = safeCategories.filter(
     (item) =>
-      item.category.toLowerCase().includes(search.toLowerCase()) ||
-      item.description.toLowerCase().includes(search.toLowerCase())
+      item?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      item?.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -100,119 +79,172 @@ function CategoryList(props) {
   );
 
   const handleStatusToggle = (id) => {
-    setData((data) =>
-      data.map((item) =>
-        item.id === id ? { ...item, status: !item.status } : item
-      )
-    );
+    // TODO: Implement status toggle functionality with API call
+    console.log("Toggle status for category ID:", id);
   };
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
+  const categoryToDelete = safeCategories.find(cat => cat._id === deleteId);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="z_catList_container">
+        <div className="z_manage_content">
+          <h3 className="z_catList_title">Categories List</h3>
+          <div>Loading categories...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="z_catList_container">
+        <div className="z_manage_content">
+          <h3 className="z_catList_title">Categories List</h3>
+          <div>Error: {error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="z_catList_container">
-      <div className="z_manage_content">
-        <h3 className="z_catList_title">Categories List</h3>
-        <div className="z_catList_topbar">
-          <input
-            className="z_catList_search"
-            type="text"
-            placeholder="Search categories..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          <button className="z_catList_addBtn">+ Add Category</button>
+    <>
+      <div className="z_catList_container">
+        <div className="z_manage_content">
+          <h3 className="z_catList_title">Categories List</h3>
+          <div className="z_catList_topbar">
+            <input
+              className="z_catList_search"
+              type="text"
+              placeholder="Search categories..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+            <button className="z_catList_addBtn">+ Add Category</button>
+          </div>
+        </div>
+
+        <div className="z_catList_tableWrapper">
+          <table className="z_catList_table">
+            <thead>
+              <tr className="z_catList_tr">
+                <th className="z_catList_th">ID</th>
+                <th className="z_catList_th">Image</th>
+                <th className="z_catList_th">Category Name</th>
+                <th className="z_catList_th">Description</th>
+                <th className="z_catList_th">Status</th>
+                <th className="z_catList_th">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.map((item) => (
+                <tr className="z_catList_tr" key={item._id}>
+                  <td className="z_catList_td">{item._id}</td>
+                  <td className="z_catList_td">
+                    <img
+                      src={item.image ? `http://localhost:5000/uploads/${item.image}` : "https://via.placeholder.com/50"}
+                      alt={item.name}
+                      className="z_catList_img"
+                    />
+                  </td>
+                  <td className="z_catList_td">{item.name}</td>
+                  <td className="z_catList_td">{item.description}</td>
+                  <td className="z_catList_td">
+                    <label className="z_switch">
+                      <input
+                        type="checkbox"
+                        checked={item.status || false}
+                        onChange={() => handleStatusToggle(item._id)}
+                      />
+                      <span className="z_slider"></span>
+                    </label>
+                  </td>
+                  <td className="z_catList_td">
+                    <button
+                      className="z_catList_actionBtn z_catList_editBtn"
+                      title="Edit"
+                      onClick={() => handleEdit(item._id)}
+                    >
+                      <RiEdit2Fill />
+                    </button>
+                    <button
+                      className="z_catList_actionBtn z_catList_deleteBtn"
+                      title="Delete"
+                      onClick={() => openDeleteModal(item._id)}
+                    >
+                      <RiDeleteBin5Fill />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="z_pagin_container">
+          <button
+            className="z_pagin_btn"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <GrCaretPrevious />
+          </button>
+          {[...Array(totalPages)].map((_, idx) => (
+            <button
+              key={idx + 1}
+              className={`z_pagin_btn${
+                currentPage === idx + 1 ? " z_pagin_active" : ""
+              }`}
+              onClick={() => handlePageChange(idx + 1)}
+            >
+              {idx + 1}
+            </button>
+          ))}
+          <button
+            className="z_pagin_btn"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <GrCaretNext />
+          </button>
         </div>
       </div>
 
-      <div className="z_catList_tableWrapper">
-        <table className="z_catList_table">
-          <thead>
-            <tr className="z_catList_tr">
-              <th className="z_catList_th">ID</th>
-              <th className="z_catList_th">Image</th>
-              <th className="z_catList_th">Category Name</th>
-              <th className="z_catList_th">Description</th>
-              <th className="z_catList_th">Status</th>
-              <th className="z_catList_th">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((item) => (
-              <tr className="z_catList_tr" key={item.id}>
-                <td className="z_catList_td">{item.id}</td>
-                <td className="z_catList_td">
-                  <img
-                    src={item.img}
-                    alt={item.category}
-                    className="z_catList_img"
-                  />
-                </td>
-                <td className="z_catList_td">{item.category}</td>
-                <td className="z_catList_td">{item.description}</td>
-                <td className="z_catList_td">
-                  <label className="z_switch">
-                    <input
-                      type="checkbox"
-                      checked={item.status}
-                      onChange={() => handleStatusToggle(item.id)}
-                    />
-                    <span className="z_slider"></span>
-                  </label>
-                </td>
-                <td className="z_catList_td">
-                  <button
-                    className="z_catList_actionBtn z_catList_editBtn"
-                    title="Edit"
-                  >
-                    <RiEdit2Fill />
-                  </button>
-                  <button
-                    className="z_catList_actionBtn z_catList_deleteBtn"
-                    title="Delete"
-                    onClick={() => handleDelete(item.id)}
-                  >
-                    <RiDeleteBin5Fill />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="z_pagin_container">
-        <button
-          className="z_pagin_btn"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          <GrCaretPrevious />
-        </button>
-        {[...Array(totalPages)].map((_, idx) => (
-          <button
-            key={idx + 1}
-            className={`z_pagin_btn${
-              currentPage === idx + 1 ? " z_pagin_active" : ""
-            }`}
-            onClick={() => handlePageChange(idx + 1)}
-          >
-            {idx + 1}
-          </button>
-        ))}
-        <button
-          className="z_pagin_btn"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          <GrCaretNext />
-        </button>
-      </div>
-    </div>
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="z_dltModal_overlay">
+          <div className="z_dltModal_content z_dltModal_noRadius">
+            {categoryToDelete && (
+              <img
+                src={categoryToDelete.image ? `http://localhost:5000/uploads/${categoryToDelete.image}` : "https://via.placeholder.com/50"}
+                alt={categoryToDelete.name}
+                className="z_dltModal_img"
+              />
+            )}
+            <h2 className="z_dltModal_title">Delete Category</h2>
+            <p className="z_dltModal_text">
+              Are you sure you want to delete <b>{categoryToDelete?.name}</b>?
+            </p>
+            <div className="z_dltModal_btnGroup">
+              <button className="z_dltModal_btn z_dltModal_cancel" onClick={closeDeleteModal}>
+                Cancel
+              </button>
+              <button className="z_dltModal_btn z_dltModal_confirm" onClick={confirmDelete}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

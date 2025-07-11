@@ -51,6 +51,9 @@ app.use('/api/wishlists', routers.wishlistRoutes);
 app.use('/api/orders', routers.orderRoutes);
 app.use('/api/dashboard', routers.dashboardRoutes);
  
+// Serve uploads folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+ 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })

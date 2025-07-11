@@ -3709,3 +3709,127 @@
     padding-right: 1rem !important;
   }
 }
+
+.z_dltModal_overlay {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(37,77,112,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(1.5px);
+}
+
+.z_dltModal_content {
+  background: linear-gradient(135deg, #fff 80%, #f8fafc 100%);
+  border-radius: 22px;
+  box-shadow: 0 8px 32px rgba(37,77,112,0.18);
+  padding: 36px 28px 28px 28px;
+  max-width: 95vw;
+  width: 370px;
+  text-align: center;
+  animation: z_dltModal_fadeIn 0.22s;
+  position: relative;
+}
+
+@keyframes z_dltModal_fadeIn {
+  from { opacity: 0; transform: scale(0.95);}
+  to { opacity: 1; transform: scale(1);}
+}
+
+.z_dltModal_img {
+  display: block;
+  margin: 32px auto 10px auto;
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  /* border-radius: 50%; */
+  box-shadow: 0 2px 8px rgba(37,77,112,0.12);
+  border: 2.5px solid #fff;
+}
+
+.z_dltModal_title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #c62828;
+  margin-bottom: 8px;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+
+.z_dltModal_text {
+  font-size: 1.08rem;
+  color: #333;
+  margin-bottom: 28px;
+  margin-top: 0;
+}
+
+.z_dltModal_btnGroup {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.z_dltModal_btn {
+  min-width: 90px;
+  padding: 10px 0;
+  border-radius: 8px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(37, 77, 112, 0.08);
+}
+
+.z_dltModal_cancel {
+  background: #e0e7ef;
+  color: #254d70;
+}
+
+.z_dltModal_cancel:hover {
+  background: #b0bec5;
+  color: #193a5e;
+}
+
+.z_dltModal_confirm {
+  background: linear-gradient(90deg, #c62828 70%, #b91c1c 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(198,40,40,0.10);
+}
+
+.z_dltModal_confirm:hover {
+  background: #b91c1c;
+  color: #fff;
+}
+
+/* Responsive for mobile */
+@media (max-width: 480px) {
+  .z_dltModal_content {
+    padding: 18px 6px 18px 6px;
+    width: 98vw;
+    min-width: unset;
+  }
+  .z_dltModal_img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 8px;
+    margin-top: 18px;
+  }
+  .z_dltModal_title {
+    font-size: 1.02rem;
+  }
+  .z_dltModal_text {
+    font-size: 0.92rem;
+  }
+  .z_dltModal_btn {
+    font-size: 0.95rem;
+    min-width: 70px;
+    padding: 8px 0;
+  }
+}
+
+.z_dltModal_noRadius {
+  border-radius: 0 !important;
+}

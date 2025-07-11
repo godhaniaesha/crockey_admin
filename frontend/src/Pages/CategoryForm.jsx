@@ -1,11 +1,47 @@
 import { useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import '../style/d_style.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { createCategory, fetchCategories, updateCategory } from '../redux/slice/category.slice';
+import { useEffect } from 'react';
 
 const CategoryForm = () => {
     const [form, setForm] = useState({ categoryName: '', status: 'Active', description: '' });
     const [images, setImages] = useState([]);
     const [dragActive, setDragActive] = useState(false);
     const inputRef = useRef(null);
+
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { categories } = useSelector(state => state.category);
+
+    useEffect(() => {
+        // If categories are not loaded, fetch them
+        if ((!categories || (Array.isArray(categories) && categories.length === 0) || (Array.isArray(categories?.result) && categories.result.length === 0)) && id) {
+            dispatch(fetchCategories());
+        }
+
+        if (id && categories) {
+            const cat = Array.isArray(categories?.result)
+                ? categories.result.find(c => c._id === id)
+                : Array.isArray(categories)
+                    ? categories.find(c => c._id === id)
+                    : null;
+            if (cat) {
+                setForm({
+                    categoryName: cat.name || "",
+                    status: cat.status === "Active" || cat.status === true,
+                    description: cat.description || "",
+                });
+                if (cat.image) {
+                    setImages([{ file: null, url: `http://localhost:5000/uploads/${cat.image}` }]);
+                } else {
+                    setImages([]);
+                }
+            }
+        }
+    }, [id, categories, dispatch]);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,10 +82,30 @@ const CategoryForm = () => {
         inputRef.current.click();
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission logic here
-        alert('Category Added!');
+        const formData = new FormData();
+        formData.append('name', form.categoryName);
+        formData.append('description', form.description);
+        formData.append('status', form.status ? 'Active' : 'Inactive');
+        if (images.length > 0 && images[0].file) {
+            formData.append('image', images[0].file);
+        }
+        try {
+            if (id) {
+                await dispatch(updateCategory({ id, formData })).unwrap();
+                alert('Category Updated!');
+            } else {
+                await dispatch(createCategory(formData)).unwrap();
+                alert('Category Added!');
+            }
+            setForm({ categoryName: '', status: 'Active', description: '' });
+            setImages([]);
+            dispatch(fetchCategories());
+            navigate('/category/list'); // <-- navigate to the list page
+        } catch (error) {
+            alert(error);
+        }
     };
 
     return (
@@ -144,8 +200,12 @@ const CategoryForm = () => {
 
 
                 <div className='w-full flex justify-center'>
-                    <button type="submit" className="d_MP-btn w-auto bg-[#254D70] text-white py-3 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition">Add Category</button>
-
+                    <button
+                        type="submit"
+                        className="d_MP-btn w-auto bg-[#254D70] text-white py-3 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition"
+                    >
+                        {id ? "Update Category" : "Add Category"}
+                    </button>
                 </div>
             </form>
         </div>

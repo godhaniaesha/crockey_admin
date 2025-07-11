@@ -1,197 +1,50 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchSubcategories, updateSubcategory, deleteSubcategory } from "../redux/slice/subcat.slice.jsx";
 import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill, RiSearchLine } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
-
-const sampleData = [
-  // Plates
-  {
-    subcat_id: 1,
-    category_name: "Plates",
-    subcategory_details: "Dinner Plate",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80",
-    description: "Large plates for main courses.",
-    status: true,
-  },
-  {
-    subcat_id: 2,
-    category_name: "Plates",
-    subcategory_details: "Side Plate",
-    img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=100&q=80",
-    description: "Small plates for sides and snacks.",
-    status: true,
-  },
-  // Bowls
-  {
-    subcat_id: 3,
-    category_name: "Bowls",
-    subcategory_details: "Soup Bowl",
-    img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=100&q=80",
-    description: "Deep bowls for soup and stews.",
-    status: true,
-  },
-  {
-    subcat_id: 4,
-    category_name: "Bowls",
-    subcategory_details: "Salad Bowl",
-    img: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=100&q=80",
-    description: "Wide bowls for salads.",
-    status: false,
-  },
-  // Cups & Mugs
-  {
-    subcat_id: 5,
-    category_name: "Cups & Mugs",
-    subcategory_details: "Tea Cup",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    description: "Elegant cups for tea.",
-    status: true,
-  },
-  {
-    subcat_id: 6,
-    category_name: "Cups & Mugs",
-    subcategory_details: "Coffee Mug",
-    img: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=100&q=80",
-    description: "Large mugs for coffee.",
-    status: true,
-  },
-  // Glasses
-  {
-    subcat_id: 7,
-    category_name: "Glasses",
-    subcategory_details: "Water Glass",
-    img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=100&q=80",
-    description: "Glasses for water and soft drinks.",
-    status: true,
-  },
-  {
-    subcat_id: 8,
-    category_name: "Glasses",
-    subcategory_details: "Wine Glass",
-    img: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=100&q=80",
-    description: "Elegant glasses for wine.",
-    status: false,
-  },
-  // Spoons & Cutlery
-  {
-    subcat_id: 9,
-    category_name: "Spoons & Cutlery",
-    subcategory_details: "Dinner Spoon",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    description: "Spoons for main courses.",
-    status: true,
-  },
-  {
-    subcat_id: 10,
-    category_name: "Spoons & Cutlery",
-    subcategory_details: "Fork",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80",
-    description: "Forks for eating and serving.",
-    status: true,
-  },
-  // Serving Dishes
-  {
-    subcat_id: 11,
-    category_name: "Serving Dishes",
-    subcategory_details: "Serving Platter",
-    img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=100&q=80",
-    description: "Platters for serving food.",
-    status: true,
-  },
-  {
-    subcat_id: 12,
-    category_name: "Serving Dishes",
-    subcategory_details: "Serving Bowl",
-    img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=100&q=80",
-    description: "Large bowls for serving.",
-    status: false,
-  },
-  // Tea Sets
-  {
-    subcat_id: 13,
-    category_name: "Tea Sets",
-    subcategory_details: "Tea Pot",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    description: "Pots for brewing tea.",
-    status: true,
-  },
-  {
-    subcat_id: 14,
-    category_name: "Tea Sets",
-    subcategory_details: "Milk Jug",
-    img: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=100&q=80",
-    description: "Jugs for serving milk.",
-    status: true,
-  },
-  // Jugs & Pitchers
-  {
-    subcat_id: 15,
-    category_name: "Jugs & Pitchers",
-    subcategory_details: "Water Jug",
-    img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=100&q=80",
-    description: "Jugs for water and beverages.",
-    status: true,
-  },
-  {
-    subcat_id: 16,
-    category_name: "Jugs & Pitchers",
-    subcategory_details: "Pitcher",
-    img: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=100&q=80",
-    description: "Pitchers for serving drinks.",
-    status: false,
-  },
-  // Baking Dishes
-  {
-    subcat_id: 17,
-    category_name: "Baking Dishes",
-    subcategory_details: "Casserole Dish",
-    img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=100&q=80",
-    description: "Oven-safe dishes for casseroles.",
-    status: true,
-  },
-  {
-    subcat_id: 18,
-    category_name: "Baking Dishes",
-    subcategory_details: "Pie Dish",
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80",
-    description: "Dishes for baking pies.",
-    status: true,
-  },
-  // Storage Containers
-  {
-    subcat_id: 19,
-    category_name: "Storage Containers",
-    subcategory_details: "Glass Storage Jar",
-    img: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80",
-    description: "Jars for storing ingredients.",
-    status: true,
-  },
-  {
-    subcat_id: 20,
-    category_name: "Storage Containers",
-    subcategory_details: "Plastic Storage Box",
-    img: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=100&q=80",
-    description: "Boxes for storing leftovers.",
-    status: false,
-  },
-];
+import { useNavigate, useParams } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 
 function SubcategoryList(props) {
-  const [data, setData] = useState(sampleData);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const dispatch = useDispatch();
+  const { subcategories = [], loading = false, error = null } = useSelector(state => state.subcategory) || {};
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [search, setSearch] = React.useState("");
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [deleteId, setDeleteId] = React.useState(null);
 
-  const handleDelete = (id) => {
-    setData((prevData) => prevData.filter((item) => item.subcat_id !== id));
+  const openDeleteModal = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
   };
 
-  const filteredData = data.filter(
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  };
+
+  const confirmDelete = async () => {
+    await dispatch(deleteSubcategory(deleteId));
+    closeDeleteModal();
+  };
+
+  useEffect(() => {
+    dispatch(fetchSubcategories());
+  }, [dispatch]);
+
+  // Always use the array for rendering
+  const safeSubcategories = Array.isArray(subcategories) ? subcategories : [];
+
+  const filteredData = safeSubcategories.filter(
     (item) =>
-      item.category_name.toLowerCase().includes(search.toLowerCase()) ||
-      item.subcategory_details.toLowerCase().includes(search.toLowerCase()) ||
-      item.description.toLowerCase().includes(search.toLowerCase())
+      item.category_name?.toLowerCase().includes(search.toLowerCase()) ||
+      item.subcategory_details?.toLowerCase().includes(search.toLowerCase()) ||
+      item.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -201,16 +54,20 @@ function SubcategoryList(props) {
   );
 
   const handleStatusToggle = (id) => {
-    setData((data) =>
-      data.map((item) =>
-        item.subcat_id === id ? { ...item, status: !item.status } : item
-      )
-    );
+    // TODO: Implement status toggle functionality with API call
+    console.log("Toggle status for subcategory ID:", id);
   };
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
+
+  if (loading) {
+    return <div className="z_subcat_container">Loading subcategories...</div>;
+  }
+  if (error) {
+    return <div className="z_subcat_container">Error: {error}</div>;
+  }
 
   return (
     <div className="z_subcat_container">
@@ -248,17 +105,17 @@ function SubcategoryList(props) {
           </thead>
           <tbody>
             {paginatedData.map((item) => (
-              <tr className="z_subcat_tr" key={item.subcat_id}>
-                <td className="z_subcat_td">{item.subcat_id}</td>
-                <td className="z_subcat_td">{item.category_name}</td>
+              <tr className="z_subcat_tr" key={item._id || item.subcat_id}>
+                <td className="z_subcat_td">{item._id || item.subcat_id}</td>
+                <td className="z_subcat_td">{item.category_name || item.category_id?.name}</td>
                 <td className="z_subcat_td">
                   <div className="z_subcat_details_cell">
                     <img
-                      src={item.img}
+                      src={item.image ? `http://localhost:5000/uploads/${item.image}` : item.img || "https://via.placeholder.com/50"}
                       alt={item.subcategory_details}
                       className="z_subcat_img"
                     />
-                    <span className="z_subcat_name">{item.subcategory_details}</span>
+                    <span className="z_subcat_name">{item.name}</span>
                   </div>
                 </td>
                 <td className="z_subcat_td">{item.description}</td>
@@ -266,8 +123,8 @@ function SubcategoryList(props) {
                   <label className="z_subcat_switch">
                     <input
                       type="checkbox"
-                      checked={item.status}
-                      onChange={() => handleStatusToggle(item.subcat_id)}
+                      checked={item.status || false}
+                      onChange={() => handleStatusToggle(item._id || item.subcat_id)}
                     />
                     <span className="z_subcat_slider"></span>
                   </label>
@@ -276,13 +133,14 @@ function SubcategoryList(props) {
                   <button
                     className="z_subcat_actionBtn z_subcat_editBtn"
                     title="Edit"
+                    onClick={() => navigate(`/edit-subcategory/${item._id || item.subcat_id}`)}
                   >
                     <RiEdit2Fill />
                   </button>
                   <button
                     className="z_subcat_actionBtn z_subcat_deleteBtn"
                     title="Delete"
-                    onClick={() => handleDelete(item.subcat_id)}
+                    onClick={() => openDeleteModal(item._id || item.subcat_id)}
                   >
                     <RiDeleteBin5Fill />
                   </button>
@@ -319,6 +177,34 @@ function SubcategoryList(props) {
           <GrCaretNext />
         </button>
       </div>
+      {showDeleteModal && (
+        <div className="z_dltModal_overlay">
+          <div className="z_dltModal_content z_dltModal_noRadius">
+            {deleteId && (() => {
+              const subcat = safeSubcategories.find(sc => sc._id === deleteId || sc.subcat_id === deleteId);
+              return subcat ? (
+                <img
+                  src={subcat.image ? `http://localhost:5000/uploads/${subcat.image}` : "https://via.placeholder.com/50"}
+                  alt={subcat.name}
+                  className="z_dltModal_img"
+                />
+              ) : null;
+            })()}
+            <h2 className="z_dltModal_title">Delete Subcategory</h2>
+            <p className="z_dltModal_text">
+              Are you sure you want to delete <b>{safeSubcategories.find(sc => sc._id === deleteId || sc.subcat_id === deleteId)?.name}</b>?
+            </p>
+            <div className="z_dltModal_btnGroup">
+              <button className="z_dltModal_btn z_dltModal_cancel" onClick={closeDeleteModal}>
+                Cancel
+              </button>
+              <button className="z_dltModal_btn z_dltModal_confirm" onClick={confirmDelete}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
