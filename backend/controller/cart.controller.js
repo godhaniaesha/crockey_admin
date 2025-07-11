@@ -3,6 +3,32 @@ const Product = require('../model/product.model');
 const Category = require('../model/category.model');
 const Subcategory = require('../model/subcategory.model');
 
+// Helper to add discountPrice to product(s)
+function addDiscountPrice(product) {
+    if (!product) return product;
+    const p = product.toObject ? product.toObject() : { ...product };
+    const price = p.price || 0;
+    const discount = p.discount || 0;
+    p.discountPrice = price - (price * discount / 100);
+    return p;
+}
+function addDiscountPriceToCart(cart) {
+    if (!cart) return cart;
+    const c = cart.toObject ? cart.toObject() : { ...cart };
+    if (Array.isArray(c.products)) {
+        c.products = c.products.map(item => {
+            if (item.product_id) {
+                item.product_id = addDiscountPrice(item.product_id);
+            }
+            return item;
+        });
+    }
+    return c;
+}
+function addDiscountPriceToCarts(carts) {
+    return carts.map(addDiscountPriceToCart);
+}
+
 // Create a new cart
 exports.createCart = async (req, res) => {
     try {
@@ -20,7 +46,7 @@ exports.getAllCarts = async (req, res) => {
         const carts = await Cart.find()
             .populate('user_id')
             .populate('products.product_id');
-        res.status(200).json(carts);
+        res.status(200).json(addDiscountPriceToCarts(carts));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -33,7 +59,7 @@ exports.getCartById = async (req, res) => {
             .populate('user_id')
             .populate('products.product_id');
         if (!cart) return res.status(404).json({ error: 'Cart not found' });
-        res.status(200).json(cart);
+        res.status(200).json(addDiscountPriceToCart(cart));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -93,7 +119,7 @@ exports.updateCart = async (req, res) => {
                 .populate('user_id')
                 .populate('products.product_id');
                 
-            return res.status(200).json(updatedCart);
+            return res.status(200).json(addDiscountPriceToCart(updatedCart));
         }
         
         // For full cart update (existing functionality)
@@ -109,7 +135,7 @@ exports.updateCart = async (req, res) => {
             return res.status(404).json({ error: 'Cart not found' });
         }
         
-        res.status(200).json(updatedCart);
+        res.status(200).json(addDiscountPriceToCart(updatedCart));
     } catch (error) {
         console.error('Cart update error:', error);
         res.status(400).json({ error: error.message });
@@ -182,7 +208,7 @@ exports.addOrUpdateProduct = async (req, res) => {
             .populate('user_id')
             .populate('products.product_id');
             
-        res.status(200).json(populatedCart);
+        res.status(200).json(addDiscountPriceToCart(populatedCart));
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -202,7 +228,7 @@ exports.removeProduct = async (req, res) => {
             .populate('user_id')
             .populate('products.product_id');
             
-        res.status(200).json(updatedCart);
+        res.status(200).json(addDiscountPriceToCart(updatedCart));
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -243,7 +269,7 @@ exports.updateProductQuantity = async (req, res) => {
             .populate('user_id')
             .populate('products.product_id');
             
-        res.status(200).json(updatedCart);
+        res.status(200).json(addDiscountPriceToCart(updatedCart));
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -277,7 +303,7 @@ exports.getUserCart = async (req, res) => {
             return res.status(200).json({ products: [], user_id });
         }
         
-        res.status(200).json(cart);
+        res.status(200).json(addDiscountPriceToCart(cart));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

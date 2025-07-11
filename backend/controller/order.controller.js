@@ -4,6 +4,32 @@ const Product = require('../model/product.model');
 const SellerPayout = require('../model/sellerPayout.model');
 const Register = require('../model/register.model');
 
+// Helper to add discountPrice to product(s)
+function addDiscountPrice(product) {
+    if (!product) return product;
+    const p = product.toObject ? product.toObject() : { ...product };
+    const price = p.price || 0;
+    const discount = p.discount || 0;
+    p.discountPrice = price - (price * discount / 100);
+    return p;
+}
+function addDiscountPriceToOrder(order) {
+    if (!order) return order;
+    const o = order.toObject ? order.toObject() : { ...order };
+    if (Array.isArray(o.products)) {
+        o.products = o.products.map(item => {
+            if (item.product_id) {
+                item.product_id = addDiscountPrice(item.product_id);
+            }
+            return item;
+        });
+    }
+    return o;
+}
+function addDiscountPriceToOrders(orders) {
+    return orders.map(addDiscountPriceToOrder);
+}
+
 // Place a new order from cart
 exports.placeOrder = async (req, res) => {
     try {
@@ -305,7 +331,9 @@ exports.getSellerOrders = async (req, res) => {
 // Get user's own orders
 exports.getUserOrders = async (req, res) => {
     try {
+        console.log(req.user,'req.user');
         const userId = req.user._id; // From JWT token - user object has _id property
+        
         const orders = await Order.find({ user_id: userId })
             .populate('products.product_id')
             .sort({ createdAt: -1 }); // Most recent first
@@ -323,7 +351,7 @@ exports.getAllOrders = async (req, res) => {
         const orders = await Order.find(filter)
             .populate('user_id')
             .populate('products.product_id');
-        res.status(200).json(orders);
+        res.status(200).json(addDiscountPriceToOrders(orders));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -332,11 +360,12 @@ exports.getAllOrders = async (req, res) => {
 // Get order by ID
 exports.getOrderById = async (req, res) => {
     try {
+        console.log(req.user,'req.user');
+        const userId = req.user._id;
         const order = await Order.findById(req.params.id)
-            .populate('user_id')
             .populate('products.product_id');
         if (!order) return res.status(404).json({ error: 'Order not found' });
-        res.status(200).json(order);
+        res.status(200).json(addDiscountPriceToOrder(order));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
