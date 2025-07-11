@@ -1,7 +1,6 @@
 const Product = require('../model/product.model');
 const Category = require('../model/category.model');
 const Subcategory = require('../model/subcategory.model');
-x
 // Helper to add discountPrice to product(s)
 function addDiscountPrice(product) {
     if (!product) return product;
