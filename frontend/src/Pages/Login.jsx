@@ -4,6 +4,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../style/z_style.css";
 import * as Yup from "yup";
 import axios from 'axios';
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser, loginUser, forgotPassword, verifyOTP, resetPassword } from "../redux/slice/auth.slice";
+import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const PasswordField = ({ name, placeholder, className }) => {
   const [show, setShow] = useState(false);
@@ -52,8 +56,26 @@ console.log("BaseUrl????????",BaseUrl);
       .required("Password is required"),
   });
 
-  const handleSubmit = (values) => {
-    console.log(values);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error, success, isAuthenticated, otpSent, otpVerified, resetToken, message } = useSelector((state) => state.auth);
+
+  const handleSubmit = async (values, { setSubmitting }) => {
+    try {
+      const resultAction = await dispatch(loginUser(values));
+      if (loginUser.fulfilled.match(resultAction)) {
+        // Store user, userId, and token in localStorage
+        const { data, accessToken } = resultAction.payload;
+        if (data && accessToken) {
+          localStorage.setItem('user', JSON.stringify(data));
+          localStorage.setItem('userId', data._id || data.id);
+          localStorage.setItem('token', accessToken);
+        }
+        navigate("/"); // or your desired route
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Register form state
@@ -77,17 +99,25 @@ console.log("BaseUrl????????",BaseUrl);
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm password is required"),
   });
-  const handleRegister = async (values) => {
-    // console.log("values>>>>>>>",values);
-    
+  const handleRegister = async (values, { setSubmitting }) => {
+    // Map mobileNumber to phone_number for backend
+    const payload = { ...values, phone_number: values.mobileNumber };
+    delete payload.mobileNumber;
+
     try {
-      const response = await axios.post(`${BaseUrl}/api/auth/register`, values);
-      console.log("response?>>>>>>>>",response.data);
-      if(response.data.success === true) {
-        setFormType("login");
+      const resultAction = await dispatch(registerUser(payload));
+      if (registerUser.fulfilled.match(resultAction)) {
+        // Store user, userId, and token in localStorage
+        const { data, accessToken } = resultAction.payload;
+        if (data && accessToken) {
+          localStorage.setItem('user', JSON.stringify(data));
+          localStorage.setItem('userId', data._id || data.id);
+          localStorage.setItem('token', accessToken);
+        }
+        navigate("/"); // or your desired route
       }
-    } catch (error) {
-        console.error('User register Error:',error); 
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -96,8 +126,16 @@ console.log("BaseUrl????????",BaseUrl);
   const forgotValidationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email is required"),
   });
-  const handleForgot = (values) => {
-    setFormType("otp");
+  const handleForgot = async (values, { setSubmitting }) => {
+    try {
+      localStorage.setItem('forgotemail', values.email); // Store email in localStorage
+      const resultAction = await dispatch(forgotPassword(values.email));
+      if (forgotPassword.fulfilled.match(resultAction)) {
+        setFormType("otp");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // OTP form state
@@ -105,8 +143,17 @@ console.log("BaseUrl????????",BaseUrl);
   const otpValidationSchema = Yup.object({
     otp: Yup.string().required("OTP is required"),
   });
-  const handleOtp = (values) => {
-    setFormType("reset");
+  const handleOtp = async (values, { setSubmitting }) => {
+    try {
+      const email = localStorage.getItem('forgotemail');
+      const payload = { email, otp: values.otp };
+      const resultAction = await dispatch(verifyOTP(payload));
+      if (verifyOTP.fulfilled.match(resultAction)) {
+        setFormType("reset");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Reset password form state
@@ -119,8 +166,22 @@ console.log("BaseUrl????????",BaseUrl);
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm password is required"),
   });
-  const handleReset = (values) => {
-    setFormType("login");
+  const handleReset = async (values, { setSubmitting }) => {
+    try {
+      const email = localStorage.getItem('forgotemail');
+      const payload = {
+        email,
+        newPassword: values.password,
+      };
+      console.log("Reset password payload:", payload);
+      const resultAction = await dispatch(resetPassword(payload));
+      if (resetPassword.fulfilled.match(resultAction)) {
+        localStorage.removeItem('forgotemail'); // Clean up
+        navigate("/login");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -210,7 +271,7 @@ console.log("BaseUrl????????",BaseUrl);
                       className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
                     />
                     <ErrorMessage
-                      name="name"
+                      name="username"
                       component="div"
                       className="s_input_error mt-1 text-xs md:text-sm"
                     />
@@ -288,36 +349,41 @@ console.log("BaseUrl????????",BaseUrl);
                 validationSchema={forgotValidationSchema}
                 onSubmit={handleForgot}
               >
-                <Form>
-                  <div className="mb-3 md:mb-5">
-                    <Field
-                      type="email"
-                      name="email"
-                      placeholder="Email address"
-                      className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
-                    />
-                    <ErrorMessage
-                      name="email"
-                      component="div"
-                      className="s_input_error mt-1 text-xs md:text-sm"
-                    />
-                  </div>
-                  <div className="flex justify-between mb-3 md:mb-5">
+                {({ isSubmitting, values }) => (
+                  <Form>
+                    <div className="mb-3 md:mb-5">
+                      <Field
+                        type="email"
+                        name="email"
+                        placeholder="Email address"
+                        className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
+                      />
+                      <ErrorMessage
+                        name="email"
+                        component="div"
+                        className="s_input_error mt-1 text-xs md:text-sm"
+                      />
+                    </div>
+                    <div className="flex justify-between mb-3 md:mb-5">
+                      <button
+                        type="button"
+                        className="text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0"
+                        onClick={() => setFormType("login")}
+                      >
+                        Back to Login
+                      </button>
+                    </div>
                     <button
-                      type="button"
-                      className="text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0"
-                      onClick={() => setFormType("login")}
+                      type="submit"
+                      className="z_cart_btn w-full py-2 md:py-3 font-bold text-base md:text-lg tracking-wide"
+                      disabled={loading || isSubmitting}
                     >
-                      Back to Login
+                      {loading ? "Sending..." : "Send OTP"}
                     </button>
-                  </div>
-                  <button
-                    type="submit"
-                    className="z_cart_btn w-full py-2 md:py-3 font-bold text-base md:text-lg tracking-wide"
-                  >
-                    Send OTP
-                  </button>
-                </Form>
+                    {error && <div className="s_input_error mt-2 text-xs md:text-sm text-red-500">{error}</div>}
+                    {success && message && <div className="mt-2 text-xs md:text-sm text-green-600">{message}</div>}
+                  </Form>
+                )}
               </Formik>
             </>
           )}
@@ -334,43 +400,41 @@ console.log("BaseUrl????????",BaseUrl);
                 validationSchema={otpValidationSchema}
                 onSubmit={handleOtp}
               >
-                <Form>
-                  <div className="mb-3 md:mb-5">
-                    <Field
-                      type="text"
-                      name="otp"
-                      placeholder="Enter OTP"
-                      className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
-                    />
-                    <ErrorMessage
-                      name="otp"
-                      component="div"
-                      className="s_input_error mt-1 text-xs md:text-sm"
-                    />
-                  </div>
-                  <div className="flex justify-between mb-3 md:mb-5">
+                {({ isSubmitting }) => (
+                  <Form>
+                    <div className="mb-3 md:mb-5">
+                      <Field
+                        type="text"
+                        name="otp"
+                        placeholder="Enter OTP"
+                        className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
+                      />
+                      <ErrorMessage
+                        name="otp"
+                        component="div"
+                        className="s_input_error mt-1 text-xs md:text-sm"
+                      />
+                    </div>
+                    <div className="flex justify-between mb-3 md:mb-5">
+                      <button
+                        type="button"
+                        className="text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0"
+                        onClick={() => setFormType("forgot")}
+                      >
+                        Back
+                      </button>
+                    </div>
                     <button
-                      type="button"
-                      className="text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0"
-                      onClick={() => setFormType("forgot")}
+                      type="submit"
+                      className="z_cart_btn w-full py-2 md:py-3 font-bold text-base md:text-lg tracking-wide mb-2"
+                      disabled={loading || isSubmitting}
                     >
-                      Back
+                      {loading ? "Verifying..." : "Verify OTP"}
                     </button>
-                  </div>
-                  <button
-                    type="submit"
-                    className="z_cart_btn w-full py-2 md:py-3 font-bold text-base md:text-lg tracking-wide mb-2"
-                  >
-                    Verify OTP
-                  </button>
-                  <button
-                    type="button"
-                    className="block mx-auto text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0 mt-2"
-                    onClick={() => alert("OTP resent!")}
-                  >
-                    Resend OTP
-                  </button>
-                </Form>
+                    {error && <div className="s_input_error mt-2 text-xs md:text-sm text-red-500">{error}</div>}
+                    {success && message && <div className="mt-2 text-xs md:text-sm text-green-600">{message}</div>}
+                  </Form>
+                )}
               </Formik>
             </>
           )}
@@ -388,37 +452,42 @@ console.log("BaseUrl????????",BaseUrl);
                 validationSchema={resetValidationSchema}
                 onSubmit={handleReset}
               >
-                <Form>
-                  <div className="mb-3 md:mb-5">
-                    <PasswordField
-                      name="password"
-                      placeholder="New Password"
-                      className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
-                    />
-                  </div>
-                  <div className="mb-3 md:mb-5">
-                    <PasswordField
-                      name="confirmPassword"
-                      placeholder="Confirm New Password"
-                      className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
-                    />
-                  </div>
-                  <div className="flex justify-between mb-3 md:mb-5">
+                {({ isSubmitting }) => (
+                  <Form>
+                    <div className="mb-3 md:mb-5">
+                      <PasswordField
+                        name="password"
+                        placeholder="New Password"
+                        className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
+                      />
+                    </div>
+                    <div className="mb-3 md:mb-5">
+                      <PasswordField
+                        name="confirmPassword"
+                        placeholder="Confirm New Password"
+                        className="s_form_imput w-full px-2 py-2 md:px-4 md:py-3 rounded-lg border border-gray-200 focus:border-[#254d70] focus:ring-2 focus:ring-[#254d70]/20 transition text-sm md:text-base"
+                      />
+                    </div>
+                    <div className="flex justify-between mb-3 md:mb-5">
+                      <button
+                        type="button"
+                        className="text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0"
+                        onClick={() => setFormType("login")}
+                      >
+                        Back to Login
+                      </button>
+                    </div>
                     <button
-                      type="button"
-                      className="text-xs md:text-sm text-[#254d70] font-medium hover:underline bg-transparent border-none p-0"
-                      onClick={() => setFormType("login")}
+                      type="submit"
+                      className="z_cart_btn w-full py-2 md:py-3 font-bold text-base md:text-lg tracking-wide"
+                      disabled={loading || isSubmitting}
                     >
-                      Back to Login
+                      {loading ? "Resetting..." : "Reset Password"}
                     </button>
-                  </div>
-                  <button
-                    type="submit"
-                    className="z_cart_btn w-full py-2 md:py-3 font-bold text-base md:text-lg tracking-wide"
-                  >
-                    Reset Password
-                  </button>
-                </Form>
+                    {error && <div className="s_input_error mt-2 text-xs md:text-sm text-red-500">{error}</div>}
+                    {success && message && <div className="mt-2 text-xs md:text-sm text-green-600">{message}</div>}
+                  </Form>
+                )}
               </Formik>
             </>
           )}

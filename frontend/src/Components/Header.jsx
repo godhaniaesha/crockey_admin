@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { MenuAlt2Icon } from '@heroicons/react/outline';
 import '../style/d_style.css';
 import { RiUser3Fill, RiLoginBoxFill } from "react-icons/ri";
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ open, setopen }) => {
   // Dropdown logic
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const avatarRef = useRef(null);
+  const navigate = useNavigate();
   useEffect(() => {
     function handleClickOutside(event) {
       if (avatarRef.current && !avatarRef.current.contains(event.target)) {
@@ -51,7 +53,7 @@ const Header = ({ open, setopen }) => {
               </button>
               <button
                 className="z_custom_dropdownItem"
-                onClick={() => { setDropdownOpen(false); /* handle sign in click here */ }}
+                onClick={() => { setDropdownOpen(false); navigate('/login'); }}
               >
                 <RiLoginBoxFill className="text-lg" />
                 Sign in
