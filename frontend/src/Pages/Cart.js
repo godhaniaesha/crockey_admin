@@ -1,54 +1,75 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../style/z_style.css';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Pagination, Autoplay } from 'swiper/modules';
+import { deleteCart, fetchCarts, updateCart } from '../redux/slice/cart.slice';
 import 'swiper/css/pagination';
-
-const sampleCartData = [
-  {
-    id: 1,
-    img: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80',
-    name: 'Ceramic Plate',
-    price: 12.99,
-    quantity: 2,
-  },
-  {
-    id: 2,
-    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80',
-    name: 'Glass Bowl',
-    price: 8.5,
-    quantity: 1,
-  },
-];
+import { useDispatch, useSelector } from 'react-redux';
 
 const coupons = [
   { code: 'SAVE10', desc: 'Get 10% off', btn: 'Apply Coupon' },
   { code: 'FREESHIP', desc: 'Free Shipping', btn: 'Apply Coupon' },
   { code: 'VIP20', desc: '20% off for VIP', btn: 'Apply Coupon' },
-  { code: 'VIP20', desc: '20% off for VIP', btn: 'Apply Coupon' },
 ];
 
-function Cart(props) {
-  const [cart, setCart] = useState(sampleCartData);
+function Cart() {
+  const BaseUrl = process.env.REACT_APP_BASEURL;
+  const dispatch = useDispatch();
+  const { carts, loading, error } = useSelector((state) => state.cart);
+
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
-  const handleDelete = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  useEffect(() => {
+    const fetchCartData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No authentication token found');
+          return;
+        }
+        await dispatch(fetchCarts()).unwrap();
+      } catch (error) {
+        console.error('Data fetching error:', error);
+      }
+    };
+
+    fetchCartData();
+  }, [dispatch]);
+
+  const handleDelete = async (id) => {
+    try {
+      await dispatch(deleteCart(id)).unwrap();
+      // No need to update local state if using Redux state directly
+    } catch (error) {
+      console.error('Delete error:', error);
+    }
   };
 
-  const handleQuantityChange = (id, value) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, Number(value)) } : item
-      )
-    );
+  const handleQuantityChange = async (cartId, newQuantity, productId) => {
+    const quantity = Math.max(1, Number(newQuantity));
+
+    try {
+      const cartData = {
+        product_id: productId,
+        quantity: quantity,
+      };
+      await dispatch(updateCart({ id: cartId, cartData })).unwrap();
+    } catch (error) {
+      console.error('Update error:', error);
+    }
   };
 
-  const getTotal = (item) => (item.price * item.quantity).toFixed(2);
+  const getTotal = (item) => {
+    const price = item.products[0].product_id.price;
+    const quantity = item.products[0].quantity;
+    return (price * quantity).toFixed(2);
+  };
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartTotal = carts.reduce((sum, item) => {
+    return sum + (item.products[0].product_id.price * item.products[0].quantity);
+  }, 0);
 
   // Calculate discount based on applied coupon
   let discount = 0;
@@ -67,11 +88,18 @@ function Cart(props) {
     setAppliedCoupon(coupon);
   };
 
+  const handleNavigate = () => {
+
+  }
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className="w-full bg-gray-100 flex items-center justify-center py-6">
       <div className="container mx-auto px-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Cart Table (2/3 width on desktop, full width on mobile/tablet) */}
+          {/* Cart Table */}
           <div className="lg:col-span-2">
             <div className="z_cart_container">
               <h3 className="z_cart_title">Cart</h3>
@@ -88,31 +116,38 @@ function Cart(props) {
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map((item) => (
-                      <tr className="z_cart_tr" key={item.id}>
+                    {carts.map((item) => (
+                      <tr className="z_cart_tr" key={item._id}>
                         <td className="z_cart_td">
-                          <img src={item.img} alt={item.name} className="z_cart_img" />
+                          <img
+                            src={`http://localhost:5000/uploads/${item.products[0].product_id.images[0]}`}
+                            alt={item.products[0].product_id.name}
+                            className="z_cart_img"
+                          />
                         </td>
-                        <td className="z_cart_td">{item.name}</td>
-                        <td className="z_cart_td">${item.price.toFixed(2)}</td>
+                        <td className="z_cart_td">{item.products[0].product_id.name}</td>
+                        <td className="z_cart_td">${item.products[0].product_id.price.toFixed(2)}</td>
                         <td className="z_cart_td">
                           <div className="z_qty_wrapper">
                             <button
+                              type="button"
                               className="z_qty_btn"
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
+                              onClick={() => handleQuantityChange(item._id, item.products[0].quantity - 1, item.products[0].product_id._id)}
+                              disabled={item.products[0].quantity <= 1}
                               aria-label="Decrease quantity"
                             >
                               –
                             </button>
-                            <span className="z_qty_value">{item.quantity}</span>
+                            <span className="z_qty_value">{item.products[0].quantity}</span>
                             <button
+                              type="button"
                               className="z_qty_btn"
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              onClick={() => handleQuantityChange(item._id, item.products[0].quantity + 1, item.products[0].product_id._id)}
                               aria-label="Increase quantity"
                             >
                               +
                             </button>
+
                           </div>
                         </td>
                         <td className="z_cart_td">${getTotal(item)}</td>
@@ -120,7 +155,7 @@ function Cart(props) {
                           <button
                             className="z_cart_actionBtn z_cart_deleteBtn"
                             title="Delete"
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => handleDelete(item._id)}
                           >
                             <RiDeleteBin5Fill />
                           </button>
@@ -135,6 +170,7 @@ function Cart(props) {
                 <span className="z_cart_totalValue">${cartTotal.toFixed(2)}</span>
               </div>
             </div>
+
             {/* Coupon Swiper */}
             <div className="mt-6">
               <Swiper
@@ -168,7 +204,8 @@ function Cart(props) {
               <div className="z_swiper-pagination" />
             </div>
           </div>
-          {/* Cart Details (1/3 width on desktop, full width below on mobile/tablet) */}
+
+          {/* Cart Details */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow p-6 sticky top-6">
               <h4 className="text-lg font-semibold mb-4 text-gray-800">Cart Details</h4>
@@ -190,9 +227,9 @@ function Cart(props) {
               <div className="border-t my-3"></div>
               <div className="flex justify-between mb-4">
                 <span className="font-semibold text-gray-800">Total</span>
-                <span className="font-bold  text-lg">${totalAfterDiscount}</span>
+                <span className="font-bold text-lg">${totalAfterDiscount}</span>
               </div>
-              <button className="z_cart_btn w-full font-semibold">Proceed to Checkout</button>
+              <button className="z_cart_btn w-full font-semibold" onClick={handleNavigate}>Proceed to Checkout</button>
             </div>
           </div>
         </div>

@@ -7,7 +7,7 @@ export const fetchCarts = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get('http://localhost:5000/api/cart/', config);
+      const response = await axios.get('http://localhost:5000/api/carts/', config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -21,7 +21,7 @@ export const createCart = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/cart/', cartData, config);
+      const response = await axios.post('http://localhost:5000/api/carts/', cartData, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -35,7 +35,7 @@ export const updateCart = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.put(`http://localhost:5000/api/cart/${id}`, cartData, config);
+      const response = await axios.put(`http://localhost:5000/api/carts/${id}`, cartData, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -49,7 +49,7 @@ export const deleteCart = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:5000/api/cart/${id}`, config);
+      await axios.delete(`http://localhost:5000/api/carts/${id}`, config);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -63,7 +63,7 @@ export const addOrUpdateProduct = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/cart/add-or-update', data, config);
+      const response = await axios.post('http://localhost:5000/api/carts/add-or-update', data, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -77,7 +77,7 @@ export const removeProduct = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/cart/remove', data, config);
+      const response = await axios.post('http://localhost:5000/api/carts/remove', data, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
