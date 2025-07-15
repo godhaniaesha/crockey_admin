@@ -18,6 +18,23 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
+export const getProductById = createAsyncThunk(
+  'product/getProductById',
+  async (productId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await axios.get(`http://localhost:5000/api/products/${productId}`, config);
+      console.log("Single product fetched..!!", response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 export const createProduct = createAsyncThunk(
   'product/createProduct',
   async (formData, { rejectWithValue }) => {
@@ -74,10 +91,15 @@ const productSlice = createSlice({
   name: 'product',
   initialState: {
     products: [],
+    singleProduct: null,
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearSingleProduct: (state) => {
+      state.singleProduct = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -89,6 +111,18 @@ const productSlice = createSlice({
         state.products = action.payload;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(getProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.singleProduct = action.payload;
+      })
+      .addCase(getProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -131,4 +165,5 @@ const productSlice = createSlice({
   },
 });
 
+export const { clearSingleProduct } = productSlice.actions;
 export default productSlice.reducer;

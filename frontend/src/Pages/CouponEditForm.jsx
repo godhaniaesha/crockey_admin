@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createCoupon } from "../redux/slice/coupon.slice";
+import { updateCoupon, fetchCoupons } from "../redux/slice/coupon.slice";
 import { IoClose } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import Spinner from "./Spinner";
 
-const CouponForm = () => {
+const CouponEditForm = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { loading, error } = useSelector(state => state.coupon);
+    const { id } = useParams();
+    const { coupons = [], loading = false, error } = useSelector(state => state.coupon);
     
     const [form, setForm] = useState({ 
         code: '', 
@@ -17,6 +19,48 @@ const CouponForm = () => {
         expiresAt: '' 
     });
     const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Find the coupon to edit
+    const couponToEdit = coupons.find(coupon => coupon._id === id);
+
+    useEffect(() => {
+        const loadCouponsAndSetForm = async () => {
+            try {
+                // If coupons are not loaded, fetch them
+                if (coupons.length === 0) {
+                    await dispatch(fetchCoupons());
+                }
+                
+                // Set form data if coupon is found
+                if (couponToEdit) {
+                    setForm({
+                        code: couponToEdit.code || '',
+                        discount: couponToEdit.discount?.toString() || '',
+                        description: couponToEdit.description || '',
+                        active: couponToEdit.active || false,
+                        expiresAt: couponToEdit.expiresAt ? new Date(couponToEdit.expiresAt).toISOString().slice(0, 16) : ''
+                    });
+                } else {
+                    setToast({
+                        show: true,
+                        message: 'Coupon not found',
+                        type: 'error'
+                    });
+                }
+            } catch (error) {
+                setToast({
+                    show: true,
+                    message: 'Error loading coupon data',
+                    type: 'error'
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadCouponsAndSetForm();
+    }, [dispatch, id, couponToEdit, coupons.length]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -49,39 +93,30 @@ const CouponForm = () => {
                 expiresAt: form.expiresAt || null
             };
 
-            const result = await dispatch(createCoupon(couponData));
+            const result = await dispatch(updateCoupon({ id, couponData }));
             
-            if (createCoupon.fulfilled.match(result)) {
+            if (updateCoupon.fulfilled.match(result)) {
                 setToast({
                     show: true,
-                    message: 'Coupon created successfully!',
+                    message: 'Coupon updated successfully!',
                     type: 'success'
-                });
-                
-                // Reset form
-                setForm({ 
-                    code: '', 
-                    discount: '', 
-                    description: '', 
-                    active: true, 
-                    expiresAt: '' 
                 });
                 
                 // Navigate to coupon list after 2 seconds
                 setTimeout(() => {
                     navigate('/coupons/list');
                 }, 2000);
-            } else if (createCoupon.rejected.match(result)) {
+            } else if (updateCoupon.rejected.match(result)) {
                 setToast({
                     show: true,
-                    message: result.payload || 'Failed to create coupon',
+                    message: result.payload || 'Failed to update coupon',
                     type: 'error'
                 });
             }
         } catch (error) {
             setToast({
                 show: true,
-                message: 'Error creating coupon: ' + (error.message || 'Unknown error'),
+                message: 'Error updating coupon: ' + (error.message || 'Unknown error'),
                 type: 'error'
             });
         }
@@ -129,6 +164,18 @@ const CouponForm = () => {
         );
     };
 
+    if (isLoading) {
+        return <Spinner />;
+    }
+
+    if (!couponToEdit) {
+        return (
+            <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
+                <div className="text-center text-red-600">Coupon not found</div>
+            </div>
+        );
+    }
+
     return (
         <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
             {toast.show && (
@@ -139,7 +186,7 @@ const CouponForm = () => {
                 />
             )}
             
-            <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">Add New Coupon</h2>
+            <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">Edit Coupon</h2>
             <form onSubmit={handleSubmit} className="space-y-8">
 
                 <div className="mb-6">
@@ -222,13 +269,20 @@ const CouponForm = () => {
                     </div>
                 </div>
 
-                <div className='w-full flex justify-center'>
+                <div className='w-full flex justify-center gap-4'>
+                    <button 
+                        type="button"
+                        onClick={() => navigate('/coupons/list')}
+                        className="d_MP-btn w-auto bg-gray-500 text-white py-3 px-6 rounded-lg text-lg font-bold shadow hover:bg-gray-600 transition"
+                    >
+                        Cancel
+                    </button>
                     <button 
                         type="submit" 
                         disabled={loading}
-                        className="d_MP-btn w-auto bg-[#254D70] text-white py-3 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="d_MP-btn w-auto bg-[#254D70] text-white py-3 px-6 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? 'Creating Coupon...' : 'Add Coupon'}
+                        {loading ? 'Updating Coupon...' : 'Update Coupon'}
                     </button>
                 </div>
             </form>
@@ -236,4 +290,4 @@ const CouponForm = () => {
     );
 }
 
-export default CouponForm;
+export default CouponEditForm; 

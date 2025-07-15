@@ -8,10 +8,14 @@ const Header = ({ open, setopen }) => {
   // Dropdown logic
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const avatarRef = useRef(null);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  
   useEffect(() => {
     function handleClickOutside(event) {
-      if (avatarRef.current && !avatarRef.current.contains(event.target)) {
+      // Check if click is outside both avatar and dropdown menu
+      if (avatarRef.current && !avatarRef.current.contains(event.target) && 
+          dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
     }
@@ -24,6 +28,23 @@ const Header = ({ open, setopen }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
+
+  const handleSignIn = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  
+    setDropdownOpen(false);
+    navigate('/login');
+  };
+
+  const handleProfile = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+ 
+    setDropdownOpen(false);
+    navigate('/profile');
+  };
+
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white shadow d_header sticky top-0 z-30">
@@ -43,17 +64,25 @@ const Header = ({ open, setopen }) => {
             D
           </div>
           {dropdownOpen && (
-            <div className="z_custom_dropdownMenu">
+            <div className="z_custom_dropdownMenu" ref={dropdownRef}>
+            
+              
               <button
+                type="button"
                 className="z_custom_dropdownItem"
-                onClick={() => { setDropdownOpen(false); /* handle profile click here */ }}
+                onClick={handleProfile}
+                onMouseDown={(e) => e.preventDefault()}
+                style={{ pointerEvents: 'auto' }}
               >
                 <RiUser3Fill className="text-lg" />
                 Profile
               </button>
               <button
+                type="button"
                 className="z_custom_dropdownItem"
-                onClick={() => { setDropdownOpen(false); navigate('/login'); }}
+                onClick={handleSignIn}
+                onMouseDown={(e) => e.preventDefault()}
+                style={{ pointerEvents: 'auto' }}
               >
                 <RiLoginBoxFill className="text-lg" />
                 Sign in

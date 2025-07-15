@@ -7,6 +7,7 @@ import { fetchProducts, updateProduct } from "../redux/slice/product.slice";
 import { fetchCategories } from "../redux/slice/category.slice";
 import { fetchSubcategories } from "../redux/slice/subcat.slice.jsx";
 import { useParams, useNavigate } from "react-router-dom";
+import Spinner from "./Spinner";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -69,7 +70,7 @@ function ProductTable() {
   };
 
   if (loading) {
-    return <div className="z_prd_container">Loading products...</div>;
+    return <Spinner />;
   }
   if (error) {
     return <div className="z_prd_container">Error: {error}</div>;
@@ -179,7 +180,7 @@ function ProductTable() {
                       className="z_prd_actionBtn z_prd_viewBtn"
                       title="View"
                       onClick={() => {
-                        // TODO: View product modal or details
+                        navigate(`/product/detail?id=${item._id || item.id}`);
                       }}
                     >
                       <RiEyeFill />

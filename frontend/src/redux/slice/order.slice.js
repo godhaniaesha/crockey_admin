@@ -10,7 +10,7 @@ export const fetchOrders = createAsyncThunk(
   'order/fetchOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/order/', getConfig());
+      const response = await axios.get('http://localhost:5000/api/orders/', getConfig());
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -22,7 +22,7 @@ export const fetchMyOrders = createAsyncThunk(
   'order/fetchMyOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/order/my-orders', getConfig());
+      const response = await axios.get('http://localhost:5000/api/orders/my-orders', getConfig());
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -34,7 +34,7 @@ export const placeOrder = createAsyncThunk(
   'order/placeOrder',
   async (orderData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/order/', orderData, getConfig());
+      const response = await axios.post('http://localhost:5000/api/orders/', orderData, getConfig());
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -46,7 +46,7 @@ export const updateOrderStatus = createAsyncThunk(
   'order/updateOrderStatus',
   async ({ id, statusData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`http://localhost:5000/api/order/${id}/status`, statusData, getConfig());
+      const response = await axios.put(`http://localhost:5000/api/orders/${id}/status`, statusData, getConfig());
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -58,7 +58,7 @@ export const deleteOrder = createAsyncThunk(
   'order/deleteOrder',
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`http://localhost:5000/api/order/${id}`, getConfig());
+      await axios.delete(`http://localhost:5000/api/orders/${id}`, getConfig());
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

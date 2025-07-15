@@ -68,6 +68,38 @@ export const resetPassword = createAsyncThunk(
     }
 );
 
+// Fetch current user profile (GET)
+export const fetchUserProfile = createAsyncThunk(
+    'auth/fetchUserProfile',
+    async (userId, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.get(`${BaseUrl}/api/auth/users/${userId}`, config);
+            console.log(response,'response');
+            
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+// Update current user profile (PUT, with image)
+export const updateUserProfile = createAsyncThunk(
+    'auth/updateUserProfile',
+    async ({ userId, formData }, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.put(`${BaseUrl}/api/auth/change-profile/${userId}`, formData, config);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
@@ -81,6 +113,10 @@ const authSlice = createSlice({
         otpSent: false,
         otpVerified: false,
         resetToken: null,
+        profile: null,
+        profileLoading: false,
+        profileError: null,
+        profileUpdateSuccess: false,
     },
     reducers: {
         clearError: (state) => {
@@ -101,6 +137,10 @@ const authSlice = createSlice({
             state.error = null;
             state.success = false;
             state.message = '';
+        },
+        clearProfileStatus: (state) => {
+            state.profileUpdateSuccess = false;
+            state.profileError = null;
         },
     },
     extraReducers: (builder) => {
@@ -188,9 +228,38 @@ const authSlice = createSlice({
             .addCase(resetPassword.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            // Fetch User Profile
+            .addCase(fetchUserProfile.pending, (state) => {
+                state.profileLoading = true;
+                state.profileError = null;
+            })
+            .addCase(fetchUserProfile.fulfilled, (state, action) => {
+                state.profileLoading = false;
+                state.profile = action.payload;
+            })
+            .addCase(fetchUserProfile.rejected, (state, action) => {
+                state.profileLoading = false;
+                state.profileError = action.payload;
+            })
+            // Update User Profile
+            .addCase(updateUserProfile.pending, (state) => {
+                state.profileLoading = true;
+                state.profileError = null;
+                state.profileUpdateSuccess = false;
+            })
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
+                state.profileLoading = false;
+                state.profile = action.payload;
+                state.profileUpdateSuccess = true;
+            })
+            .addCase(updateUserProfile.rejected, (state, action) => {
+                state.profileLoading = false;
+                state.profileError = action.payload;
+                state.profileUpdateSuccess = false;
             });
     },
 });
 
-export const { clearError, clearSuccess, clearOtpStatus, logout } = authSlice.actions;
+export const { clearError, clearSuccess, clearOtpStatus, logout, clearProfileStatus } = authSlice.actions;
 export default authSlice.reducer;

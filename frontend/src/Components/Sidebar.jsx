@@ -52,15 +52,6 @@ const menu = [
         ]
     },
     {
-        name: 'Customers',
-        icon: <UsersIcon className='w-6 h-6 d_icon' />,
-        link: '/customer',
-        submenu: [
-            { name: 'Customer List', link: '/customer/list' },
-            { name: 'Add Customer', link: '/customer/add' }
-        ]
-    },
-    {
         name: 'Coupons',
         icon: <GiftIcon className='w-6 h-6 d_icon' />,
         link: '/coupons',
@@ -69,15 +60,7 @@ const menu = [
             { name: 'Coupon List', link: '/coupons/list' }
         ]
     },
-    {
-        name: 'Offers',
-        icon: <GiftIcon className='w-6 h-6 d_icon' />,
-        link: '/offers',
-        submenu: [
-            { name: 'Add Offer', link: '/offers/add' },
-            { name: 'Offer List', link: '/offers/list' }
-        ]
-    },
+    
     {
         name: 'Review',
         icon: <StarIcon className='w-6 h-6 d_icon' />,

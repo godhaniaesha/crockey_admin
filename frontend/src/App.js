@@ -17,13 +17,13 @@ import SubcategoryList from './Pages/SubcategoryList';
 import OrderList from './Pages/OrderList';
 import CustomerList from './Pages/CustomerList';
 import CouponList from './Pages/CouponList';
-import OfferList from './Pages/OfferList';
 import Profile from './Pages/Profile';
 import CategoryForm from './Pages/CategoryForm';
 import SubCategoryForm from './Pages/SubCategoryForm';
 import CouponForm from './Pages/CouponForm';
-import OffersForm from './Pages/OffersForm';
+import CouponEditForm from './Pages/CouponEditForm';
 import CheckOut from './Pages/CheckOut';
+import Spinner from './Pages/Spinner.js';
 
 function App() {
   return (
@@ -33,13 +33,14 @@ function App() {
         <Route path='/forgotPassword' element={<ForgotPassword />}></Route>
         <Route path='/emailVerification' element={<EmailVerificaion />}></Route>
         <Route path='/resetPassword' element={<ResetPassword />}></Route>
+        <Route path='/spinner' element={<Spinner />}></Route>
 
         <Route path='/' element={<Main />}>
           <Route index element={<Dashboard />} />
           <Route path='category/add' element={<CategoryForm />} />
           <Route path='subcategory/add' element={<SubCategoryForm />} />
           <Route path='coupons/add' element={<CouponForm />} />
-          <Route path='offers/add' element={<OffersForm />} />
+          <Route path='coupons/edit/:id' element={<CouponEditForm />} />
           <Route path='product/add' element={<ProductForm />} />
           <Route path='product/add' element={<ProductForm />} />
           <Route path='product/list' element={<ProductTable />} />
@@ -52,7 +53,7 @@ function App() {
           <Route path='orders/list' element={<OrderList />} />
           <Route path='customer/list' element={<CustomerList />} />
           <Route path='coupons/list' element={<CouponList />} />
-          <Route path='offers/list' element={<OfferList />} />
+       
           <Route path='/profile' element={<Profile />} />
           <Route path='checkOut' element={<CheckOut />} />
 
