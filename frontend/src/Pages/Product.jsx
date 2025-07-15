@@ -4,6 +4,8 @@ import { fetchProducts } from "../redux/slice/product.slice";
 import { createCart, addOrUpdateProduct, fetchCarts } from "../redux/slice/cart.slice";
 import "../style/x_app.css";
 import { GrCart } from "react-icons/gr";
+import { MdShoppingCart } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   "Man Shirt",
@@ -40,6 +42,7 @@ const Product = () => {
   const authState = useSelector((state) => state.auth);
   console.log("authState:", authState);
   const user = authState?.user;
+  const navigate = useNavigate();
   
 
   const { categories = [] } = useSelector((state) => state.category) || {};
@@ -533,6 +536,8 @@ const Product = () => {
               <div
                 key={product._id || product.id}
                 className="x_product_card group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+                
+                style={{ cursor: "pointer" }}
               >
                 {/* Product Image Container */}
                 <div className="x_product_image_container relative overflow-hidden">
@@ -551,21 +556,9 @@ const Product = () => {
                   )}
                   {/* Quick Actions */}
                   <div className="x_quick_actions absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
-                      <svg
-                        className="w-4 h-4 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                    </button>
+                    {/* <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
+                      <FaRegEye className="w-4 h-4 text-gray-600" />
+                    </button> */}
                     <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors"
                       onClick={() => handleAddToCart(product)}
                       disabled={addingToCart === product._id}
@@ -580,7 +573,7 @@ const Product = () => {
                 </div>
 
                 {/* Product Info */}
-                <div className="x_product_info p-4">
+                <div className="x_product_info p-4" onClick={() => navigate(`/product/detail?id=${product._id}`)}>
                   {/* Category & Brand */}
                   <div className="x_product_meta flex items-center gap-2 mb-2">
                     <span className="x_category text-xs x_blue bg-blue-50 px-2 py-1 rounded-full">

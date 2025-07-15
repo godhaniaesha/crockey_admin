@@ -21,7 +21,7 @@ const generateTokens = async (id) => {
                 role: user.role
             },
             process.env.ACCESS_TOKEN_KEY,
-            { expiresIn: '15m' });
+            { expiresIn: '15d' });
 
         const refreshToken = await jwt.sign(
             {
@@ -46,6 +46,72 @@ const generateTokens = async (id) => {
     } catch (error) {
         throw new Error(error.message);
     }
+}
+
+const generateNewToken = async (req, res) => {
+    const token = req.cookies.refreshToken ;
+    console.log("TOKENS", token);
+
+    if (!token) {
+        return res.status(401)
+            .json({
+                success: false,
+                message: "Token not available"
+            })
+    }
+
+    jwt.verify(token, process.env.REFRESH_TOKEN_KEY, async function (err, decoded) {
+        try {
+            if (err) {
+                return res.status(400)
+                    .json({
+                        success: false,
+                        message: "Token invalid"
+                    })
+            }
+
+            const USERS = await Register.findOne({ _id: decoded._id });
+            console.log("USERSss", USERS)
+
+            if (!USERS) {
+                return res.status(404)
+                    .json({
+                        success: false,
+                        message: "User not found..!!"
+                    })
+            }
+
+            if (token !== USERS.refreshToken) {
+                return res.status(400)
+                    .json({
+                        success: false,
+                        message: "Invalid user"
+                    })
+            }
+
+            const { assesToken, refreshToken } = await generateTokens(decoded._id);
+
+            const userDetails = await Register.findOne({ email: USERS.email }).select("-password -refreshToken");
+            console.log("userDetailsss", userDetails);
+
+            const option = {
+                httpOnly: true,
+                secure: true
+            }
+
+            return res.status(200)
+            .cookie("accessToken", assesToken, { httpOnly: true, secure: true, maxAge: 15*60*1000, sameSite:"None" })
+            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, maxAge:15*24*60*60*1000, sameSite:"None" })
+            .json({ success: true, finduser: userDetails, data: userDetails, accessToken: assesToken,refreshToken:refreshToken });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                data: [],
+                error: "Error in register user: " + error.message
+            })
+        }
+    });
 }
 
 const RegisterUser = async (req, res) => {
@@ -394,71 +460,6 @@ const changeProfile = async (req, res) => {
     }
 };
 
-const generateNewToken = async (req, res) => {
-    const token = req.cookies.refreshToken ;
-    console.log("TOKENS", token);
-
-    if (!token) {
-        return res.status(401)
-            .json({
-                success: false,
-                message: "Token not available"
-            })
-    }
-
-    jwt.verify(token, process.env.REFRESH_TOKEN_KEY, async function (err, decoded) {
-        try {
-            if (err) {
-                return res.status(400)
-                    .json({
-                        success: false,
-                        message: "Token invalid"
-                    })
-            }
-
-            const USERS = await Register.findOne({ _id: decoded._id });
-            console.log("USERSss", USERS)
-
-            if (!USERS) {
-                return res.status(404)
-                    .json({
-                        success: false,
-                        message: "User not found..!!"
-                    })
-            }
-
-            if (token !== USERS.refreshToken) {
-                return res.status(400)
-                    .json({
-                        success: false,
-                        message: "Invalid user"
-                    })
-            }
-
-            const { assesToken, refreshToken } = await generateTokens(decoded._id);
-
-            const userDetails = await Register.findOne({ email: USERS.email }).select("-password -refreshToken");
-            console.log("userDetailsss", userDetails);
-
-            const option = {
-                httpOnly: true,
-                secure: true
-            }
-
-            return res.status(200)
-            .cookie("accessToken", assesToken, { httpOnly: true, secure: true, maxAge: 15*60*1000, sameSite:"None" })
-            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, maxAge:15*24*60*60*1000, sameSite:"None" })
-            .json({ success: true, finduser: userDetails, data: userDetails, accessToken: assesToken,refreshToken:refreshToken });
-
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                data: [],
-                error: "Error in register user: " + error.message
-            })
-        }
-    });
-}
 
 const logoutUser = async (req, res) => {
     try {
@@ -1156,6 +1157,68 @@ const getSellerRegistrationProgress = async (req, res) => {
     }
 };
 
+// Helper to send error responses
+const sendUnauthorizedResponse = (res, message) => res.status(401).json({ success: false, message });
+const sendErrorResponse = (res, code, message) => res.status(code).json({ success: false, message });
+
+const UserAuth = async (req, res, next) => {
+    try {
+        // Get access token from Authorization header
+        const accessToken = req.header('Authorization')?.replace('Bearer ', '');
+        if (!accessToken) {
+            return sendUnauthorizedResponse(res, "Access denied. No token provided.");
+        }
+
+        try {
+            // Try to verify access token
+            const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_KEY);
+            req.user = decoded;
+            return next();
+        } catch (err) {
+            // If token expired, try to use refresh token from Authorization-Refresh header
+            if (err.name === "TokenExpiredError") {
+                const refreshToken = req.header('Authorization-Refresh')?.replace('Bearer ', '');
+                if (!refreshToken) {
+                    return sendUnauthorizedResponse(res, "Session expired. Please login again.");
+                }
+
+                // Verify refresh token
+                jwt.verify(refreshToken, process.env.REFRESH_TOKEN_KEY, async (refreshErr, decodedRefresh) => {
+                    if (refreshErr) {
+                        return sendUnauthorizedResponse(res, "Invalid refresh token. Please login again.");
+                    }
+
+                    // Find user and check refresh token matches
+                    const user = await Register.findById(decodedRefresh._id);
+                    if (!user || user.refreshToken !== refreshToken) {
+                        return sendUnauthorizedResponse(res, "Invalid user or refresh token.");
+                    }
+
+                    // Generate new access token
+                    const newAccessToken = jwt.sign(
+                        { _id: user._id, username: user.username, role: user.role },
+                        process.env.ACCESS_TOKEN_KEY,
+                        { expiresIn: '1m' }
+                    );
+
+                    // Set new access token in response header
+                    res.setHeader('Authorization', `Bearer ${newAccessToken}`);
+
+                    // Attach user info to req
+                    req.user = { _id: user._id, username: user.username, role: user.role };
+
+                    // Continue to next middleware/route
+                    return next();
+                });
+            } else {
+                return sendUnauthorizedResponse(res, "Invalid token.");
+            }
+        }
+    } catch (error) {
+        return sendErrorResponse(res, 500, error.message);
+    }
+};
+
 module.exports = {
     RegisterUser,
     login,
@@ -1180,5 +1243,6 @@ module.exports = {
     addBankDetails,
     addPickupAddress,
     acceptTermsAndConditions,
-    getSellerRegistrationProgress
+    getSellerRegistrationProgress,
+    UserAuth
 };

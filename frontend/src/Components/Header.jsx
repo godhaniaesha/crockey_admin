@@ -3,8 +3,12 @@ import { MenuAlt2Icon } from '@heroicons/react/outline';
 import '../style/d_style.css';
 import { RiUser3Fill, RiLoginBoxFill } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../redux/slice/auth.slice'; // adjust path if needed
 
 const Header = ({ open, setopen }) => {
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   // Dropdown logic
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const avatarRef = useRef(null);
@@ -45,6 +49,15 @@ const Header = ({ open, setopen }) => {
     navigate('/profile');
   };
 
+  const handleLogout = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(logout());
+    localStorage.removeItem('token');
+    setDropdownOpen(false);
+    navigate('/login');
+  };
+
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white shadow d_header sticky top-0 z-30">
@@ -77,16 +90,29 @@ const Header = ({ open, setopen }) => {
                 <RiUser3Fill className="text-lg" />
                 Profile
               </button>
-              <button
-                type="button"
-                className="z_custom_dropdownItem"
-                onClick={handleSignIn}
-                onMouseDown={(e) => e.preventDefault()}
-                style={{ pointerEvents: 'auto' }}
-              >
-                <RiLoginBoxFill className="text-lg" />
-                Sign in
-              </button>
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  className="z_custom_dropdownItem"
+                  onClick={handleLogout}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <RiLoginBoxFill className="text-lg" />
+                  Logout
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="z_custom_dropdownItem"
+                  onClick={handleSignIn}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <RiLoginBoxFill className="text-lg" />
+                  Sign in
+                </button>
+              )}
             </div>
           )}
         </div>

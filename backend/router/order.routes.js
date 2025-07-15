@@ -15,7 +15,8 @@ const {
     getSellerIncome,
     updateBankDetails,
     requestWithdrawal,
-    getAllSellersIncome
+    getAllSellersIncome,
+    getOrdersByUserId
 } = require('../controller/order.controller');
 const { 
     authenticateToken, 
@@ -29,6 +30,9 @@ router.post('/', authenticateToken, placeOrder);
 
 // Get all orders (admin only)
 router.get('/', requireAdmin, getAllOrders);
+
+// Get all orders (admin only)
+router.get('/orders/user/:userId', authenticateToken, getOrdersByUserId);
 
 // Get user's own orders (authenticated user)
 router.get('/my-orders', authenticateToken, getUserOrders);
