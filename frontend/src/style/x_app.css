@@ -1166,3 +1166,34 @@ font-size: 16px;
 
 
 /* carttt */
+
+/* Offcanvas Right (Reusable) */
+.x_offcanvas_right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 18rem; /* 72 = 18rem */
+  background: #fff;
+  z-index: 40;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  border-left: 1px solid #e5e7eb;
+  border-radius: 0.75rem 0 0 0.75rem;
+  overflow-y: auto;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.x_offcanvas_right.x_offcanvas_open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (min-width: 768px) {
+  .x_offcanvas_below_header {
+    top: 80px; /* Adjust if your header is a different height */
+    height: calc(100vh - 80px);
+    border-radius: 0 0 0.75rem 0.75rem;
+  }
+}

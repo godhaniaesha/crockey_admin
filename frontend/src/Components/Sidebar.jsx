@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { SlHandbag } from "react-icons/sl";
+import { MdOutlineCategory } from "react-icons/md";
 import { HomeIcon, ViewGridIcon, TagIcon, ShoppingCartIcon, UsersIcon, GiftIcon, StarIcon, ShieldCheckIcon, XIcon, ChevronRightIcon } from '@heroicons/react/outline';
 import '../style/d_style.css';
 
@@ -16,7 +18,7 @@ const menu = [
     },
     {
         name: 'Subcategory',
-        icon: <ViewGridIcon className='w-6 h-6 d_icon' />,
+        icon: <MdOutlineCategory  className='w-6 h-6 d_icon' />,
         link: '/subcategory',
         submenu: [
             { name: 'Add Subcategory', link: '/subcategory/add' },
@@ -25,7 +27,7 @@ const menu = [
     },
     {
         name: 'Product',
-        icon: <TagIcon className='w-6 h-6 d_icon' />,
+        icon: <SlHandbag className='w-6 h-6 d_icon' />,
         link: '/product',
         submenu: [
             { name: 'Add Product', link: '/product/add' },
@@ -67,24 +69,6 @@ const menu = [
         submenu: [
             { name: 'Add Coupon', link: '/coupons/add' },
             { name: 'Coupon List', link: '/coupons/list' }
-        ]
-    },
-    {
-        name: 'Offers',
-        icon: <GiftIcon className='w-6 h-6 d_icon' />,
-        link: '/offers',
-        submenu: [
-            { name: 'Add Offer', link: '/offers/add' },
-            { name: 'Offer List', link: '/offers/list' }
-        ]
-    },
-    {
-        name: 'Review',
-        icon: <StarIcon className='w-6 h-6 d_icon' />,
-        link: '/review',
-        submenu: [
-            { name: 'Review List', link: '/review/list' },
-            { name: 'Add Review', link: '/review/add' }
         ]
     },
     { name: 'Privacy policy', icon: <ShieldCheckIcon className='w-6 h-6 d_icon' />, link: '/privacy_policy' },

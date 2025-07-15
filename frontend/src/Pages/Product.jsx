@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../redux/slice/product.slice";
 import "../style/x_app.css";
 import { FaCartPlus } from "react-icons/fa";
 import { GrCart } from "react-icons/gr";
@@ -22,88 +24,6 @@ const colors = [
   "bg-blue-400",
 ];
 
-// Crockery products data
-const crockeryProducts = [
-  {
-    id: 1,
-    name: "Ceramic Dinner Plate Set",
-    price: 299,
-    originalPrice: 399,
-    image:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
-    category: "Plates",
-    brand: "KitchenCraft",
-    rating: 4.5,
-    reviews: 128,
-    discount: 25,
-  },
-  {
-    id: 2,
-    name: "Glass Water Glasses",
-    price: 199,
-    originalPrice: 249,
-    image:
-      "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=400&fit=crop",
-    category: "Glasses",
-    brand: "CrystalClear",
-    rating: 4.3,
-    reviews: 89,
-    discount: 20,
-  },
-  {
-    id: 3,
-    name: "Stainless Steel Cutlery Set",
-    price: 599,
-    originalPrice: 799,
-    image:
-      "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=400&h=400&fit=crop",
-    category: "Cutlery",
-    brand: "PremiumSteel",
-    rating: 4.7,
-    reviews: 156,
-    discount: 25,
-  },
-  {
-    id: 4,
-    name: "Porcelain Coffee Mugs",
-    price: 149,
-    originalPrice: 199,
-    image:
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop",
-    category: "Mugs",
-    brand: "MorningBrew",
-    rating: 4.4,
-    reviews: 203,
-    discount: 25,
-  },
-  {
-    id: 5,
-    name: "Bamboo Serving Bowl",
-    price: 399,
-    originalPrice: 499,
-    image:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
-    category: "Bowls",
-    brand: "EcoKitchen",
-    rating: 4.6,
-    reviews: 67,
-    discount: 20,
-  },
-  {
-    id: 6,
-    name: "Melamine Kids Plate Set",
-    price: 249,
-    originalPrice: 299,
-    image:
-      "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=400&fit=crop",
-    category: "Kids",
-    brand: "SafePlate",
-    rating: 4.2,
-    reviews: 94,
-    discount: 17,
-  },
-];
-
 const Product = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([""]);
@@ -112,6 +32,39 @@ const Product = () => {
   const [selectedColors, setSelectedColors] = useState([]);
   const [showColorPalette, setShowColorPalette] = useState(false);
   const filterRef = React.useRef(null);
+  const dispatch = useDispatch();
+  const { products = [], loading, error } = useSelector((state) => state.product) || {};
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
+
+  const { categories = [] } = useSelector((state) => state.category) || {};
+  const safeCategories = Array.isArray(categories?.result)
+    ? categories.result
+    : Array.isArray(categories)
+      ? categories
+      : [];
+
+  const { subcategories = [] } = useSelector((state) => state.subcategory) || {};
+  const safeSubcategories = Array.isArray(subcategories?.result)
+    ? subcategories.result
+    : Array.isArray(subcategories)
+      ? subcategories
+      : [];
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  // Auto-close filter offcanvas on window resize to <= 767px
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth <= 767) {
+        setShowFilter(false);
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   React.useEffect(() => {
     if (!showFilter) return;
@@ -127,9 +80,9 @@ const Product = () => {
   }, [showFilter]);
 
   // Handle checkbox change
-  const handleCategory = (cat) => {
+  const handleCategory = (catId) => {
     setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+      prev.includes(catId) ? prev.filter((c) => c !== catId) : [...prev, catId]
     );
     setShowFilter(false);
   };
@@ -155,6 +108,24 @@ const Product = () => {
     // Removed setShowFilter(false) so dropdown does not close on price change
   };
 
+  // Filter products based on selected category and subcategory
+  let displayProducts = products;
+  if (selectedSubcategoryId) {
+    displayProducts = products.filter(
+      (p) =>
+        p.subcategory_id &&
+        (p.subcategory_id._id === selectedSubcategoryId ||
+          p.subcategory_id === selectedSubcategoryId)
+    );
+  } else if (selectedCategories.length > 0) {
+    displayProducts = products.filter(
+      (p) =>
+        p.category_id &&
+        selectedCategories.includes(p.category_id._id || p.category_id)
+    );
+  }
+  // If selectedCategories is empty, displayProducts remains as all products
+
   return (
     <>
       <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
@@ -166,9 +137,8 @@ const Product = () => {
           >
             Filters
             <svg
-              className={`w-4 h-4 ml-2 transition-transform ${
-                showFilter ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 ml-2 transition-transform ${showFilter ? "rotate-180" : ""
+                }`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -188,28 +158,20 @@ const Product = () => {
               onClick={() => setShowFilter(false)}
             />
           )}
-          {/* Dropdown/Offcanvas */}
+          {/* Offcanvas (Right Side, below header on large screens) */}
           <div
             ref={filterRef}
             className={`
-                    z-40 bg-white border border-gray-200 rounded-md shadow-lg w-72 max-h-[80vh] overflow-y-auto
-                    transition-all duration-300 ease-in-out
-                    ${
-                      window.innerWidth < 768
-                        ? `fixed left-0 top-0 h-full rounded-none
-                    ${
-                      showFilter
-                        ? "translate-x-0 opacity-100 pointer-events-auto"
-                        : "-translate-x-full opacity-0 pointer-events-none"
-                    }`
-                        : `absolute left-0 top-14
-                    ${
-                      showFilter
-                        ? "translate-y-0 opacity-100 pointer-events-auto"
-                        : "-translate-y-4 opacity-0 pointer-events-none"
-                    }`
-                    }
-                    `}
+              z-40 bg-white border border-gray-200 rounded-md shadow-lg w-72  overflow-y-auto
+              transition-all duration-300 ease-in-out
+              fixed right-0
+              ${window.innerWidth < 768
+                ? 'top-0 h-full rounded-none'
+                : 'top-[80px] h-[calc(100vh-80px)]'}
+              ${showFilter
+                ? 'translate-x-0 opacity-100 pointer-events-auto'
+                : 'translate-x-full opacity-0 pointer-events-none'}
+            `}
           >
             {/* Close btn for mobile */}
             <div className="flex justify-between items-center px-4 py-2 border-b md:hidden transition-transform duration-300 ease-in-out">
@@ -232,23 +194,76 @@ const Product = () => {
             </div>
             <div className="p-4">
               {/* Category */}
+              
               <div>
                 <h3 className="font-semibold text-lg mb-2">Category</h3>
-                {categories.map((cat) => (
+                {safeCategories.map((cat) => (
                   <label
-                    key={cat}
+                    key={cat._id}
                     className="x_checkbox_label flex items-center mb-1 cursor-pointer transition-transform duration-300"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedCategories.includes(cat)}
-                      onChange={() => handleCategory(cat)}
+                      checked={selectedCategories.includes(cat._id)}
+                      onChange={() => handleCategory(cat._id)}
                       className="x_checkbox accent-blue-500 w-4 h-4 mr-2"
                     />
-                    <span className="text-gray-700">{cat}</span>
+                    {/* Show category image if available */}
+                    {cat.image && (
+                      <img
+                        src={`http://localhost:5000/uploads/${cat.image}`}
+                        alt={cat.name}
+                        style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', marginRight: 8, border: '1px solid #eee' }}
+                      />
+                    )}
+                    <span className="text-gray-700">{cat.name}</span>
                   </label>
                 ))}
               </div>
+               {/* Subcategory */}
+              {selectedCategories.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <h3 className="font-semibold text-lg mb-2">Subcategory</h3>
+                  {safeSubcategories.map((sub) => {
+                    // If categories are selected, only enable subcategories that belong to them
+                    const isEnabled =
+                      selectedCategories.length === 0 ||
+                      selectedCategories.includes(sub.category_id?._id);
+
+                    return (
+                      <label
+                        key={sub._id}
+                        className={`x_checkbox_label flex items-center mb-1 cursor-pointer transition-transform duration-300 ${!isEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedSubcategoryId === sub._id}
+                          onChange={() => {
+                            if (isEnabled) setSelectedSubcategoryId(sub._id);
+                          }}
+                          className="x_checkbox accent-blue-500 w-4 h-4 mr-2"
+                          disabled={!isEnabled}
+                        />
+                        {sub.image && (
+                          <img
+                            src={`http://localhost:5000/uploads/${sub.image}`}
+                            alt={sub.name}
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 6,
+                              objectFit: 'cover',
+                              marginRight: 8,
+                              border: '1px solid #eee',
+                            }}
+                          />
+                        )}
+                        <span className="text-gray-700">{sub.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
               {/* Brand */}
               <div className="mt-4">
                 <h3 className="font-semibold text-lg mb-2">Brand</h3>
@@ -288,8 +303,8 @@ const Product = () => {
                 <h3 className="font-semibold text-lg mb-2">Price</h3>
                 <div className="flex flex-col items-center">
                   <div className="x_price_labels w-full flex justify-between text-sm mb-2">
-                    <span className="x_price_min">${`$${price[0]}`}</span>
-                    <span className="x_price_max">${`$${price[1]}`}</span>
+                    <span className="x_price_min">{`$${price[0]}`}</span>
+                    <span className="x_price_max">{`$${price[1]}`}</span>
                   </div>
                   <div
                     className="x_price_slider_track relative w-full flex items-center"
@@ -298,7 +313,7 @@ const Product = () => {
                     {/* Min slider */}
                     <input
                       type="range"
-                      min="0"
+                      min="100"
                       max="1000"
                       step="10"
                       value={price[0]}
@@ -309,7 +324,7 @@ const Product = () => {
                     {/* Max slider */}
                     <input
                       type="range"
-                      min="0"
+                      min="100"
                       max="1000"
                       step="10"
                       value={price[1]}
@@ -319,7 +334,7 @@ const Product = () => {
                     />
                   </div>
                   <div className="x_price_scale w-full flex justify-between text-xs text-gray-400 mt-1">
-                    <span>0</span>
+                    <span>100</span>
                     <span>250</span>
                     <span>500</span>
                     <span>750</span>
@@ -356,21 +371,25 @@ const Product = () => {
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedCategories
             .filter((c) => c)
-            .map((cat) => (
-              <span key={cat} className="x_filter_tag">
-                {cat}
-                <button
-                  className="x_filter_tag_close"
-                  onClick={() =>
-                    setSelectedCategories(
-                      selectedCategories.filter((c) => c !== cat)
-                    )
-                  }
-                >
-                  &times;
-                </button>
-              </span>
-            ))}
+            .map((catId) => {
+              const catObj = safeCategories.find(c => c._id === catId);
+              return (
+                <span key={catId} className="x_filter_tag">
+                  {catObj ? catObj.name : catId}
+                  <button
+                    className="x_filter_tag_close"
+                    onClick={() =>
+                      setSelectedCategories(
+                        selectedCategories.filter((c) => c !== catId)
+                      )
+                    }
+                  >
+                    &times;
+                  </button>
+                </span>
+              );
+            })
+          }
           {selectedBrands
             .filter((b) => b)
             .map((brand) => (
@@ -424,102 +443,112 @@ const Product = () => {
 
         {/* Product Cards */}
         <div className="x_product_grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 mt-8">
-          {crockeryProducts.map((product) => (
-            <div
-              key={product.id}
-              className="x_product_card group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
-            >
-              {/* Product Image Container */}
-              <div className="x_product_image_container relative overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="x_product_image w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                {/* Discount Badge */}
-                <div className="x_discount_badge absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {product.discount}% OFF
-                </div>
-                {/* Quick Actions */}
-                <div className="x_quick_actions absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
-                    <svg
-                      className="w-4 h-4 text-gray-600"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </button>
-                  <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
-                    {/* <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" 
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                </svg> */}
-
-                    <GrCart className="w-4 h-4 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Product Info */}
-              <div className="x_product_info p-4">
-                {/* Category & Brand */}
-                <div className="x_product_meta flex items-center gap-2 mb-2">
-                  <span className="x_category text-xs x_blue bg-blue-50 px-2 py-1 rounded-full">
-                    {product.category}
-                  </span>
-                  <span className="x_brand text-xs text-gray-500">
-                    {product.brand}
-                  </span>
-                </div>
-
-                {/* Product Name */}
-                <h3 className="x_product_name text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:x_blue transition-colors">
-                  {product.name}
-                </h3>
-
-                {/* Rating */}
-                <div className="x_rating_container flex items-center gap-2 mb-3">
-                  <div className="x_stars flex items-center">
-                    {[...Array(5)].map((_, i) => (
+          {loading ? (
+            <div className="col-span-full text-center text-lg">Loading...</div>
+          ) : error ? (
+            <div className="col-span-full text-center text-red-500">{error}</div>
+          ) : Array.isArray(displayProducts) && displayProducts.length > 0 ? (
+            displayProducts.map((product) => (
+              // console.log(product)
+              
+              <div
+                key={product._id || product.id}
+                className="x_product_card group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+              >
+                {/* Product Image Container */}
+                <div className="x_product_image_container relative overflow-hidden">
+                  <img
+                    src={
+                      `http://localhost:5000/uploads/${product.images}`
+                    }
+                    alt={product.name}
+                    className="x_product_image w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  {/* Discount Badge */}
+                  {product.discount && (
+                    <div className="x_discount_badge absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      {product.discount}% OFF
+                    </div>
+                  )}
+                  {/* Quick Actions */}
+                  <div className="x_quick_actions absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
                       <svg
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(product.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                        className="w-4 h-4 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
                       >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
                       </svg>
-                    ))}
+                    </button>
+                    <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
+                      <GrCart className="w-4 h-4 text-gray-600" />
+                    </button>
                   </div>
-                  <span className="x_rating_text text-sm text-gray-600">
-                    {product.rating} ({product.reviews})
-                  </span>
                 </div>
 
-                {/* Price */}
-                <div className="x_price_container flex items-center gap-2">
-                  <span className="x_current_price text-xl font-bold text-gray-900">
-                    ₹{product.price}
-                  </span>
-                  <span className="x_original_price text-sm text-gray-500 line-through">
-                    ₹{product.originalPrice}
-                  </span>
+                {/* Product Info */}
+                <div className="x_product_info p-4">
+                  {/* Category & Brand */}
+                  <div className="x_product_meta flex items-center gap-2 mb-2">
+                    <span className="x_category text-xs x_blue bg-blue-50 px-2 py-1 rounded-full">
+                      {product.category_id.name || "-"}
+                    </span>
+                    <span className="x_brand text-xs text-gray-500">
+                      {product.brand || "-"}
+                    </span>
+                  </div>
+
+                  {/* Product Name */}
+                  <h3 className="x_product_name text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:x_blue transition-colors">
+                    {product.name}
+                  </h3>
+
+                  {/* Rating */}
+                  <div className="x_rating_container flex items-center gap-2 mb-3">
+                    <div className="x_stars flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-4 h-4 ${i < Math.floor(product.rating || 0)
+                              ? "text-yellow-400"
+                              : "text-gray-300"
+                            }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="x_rating_text text-sm text-gray-600">
+                      {product.rating || 0} ({product.reviews || 0})
+                    </span>
+                  </div>
+
+                  {/* Price */}
+                  <div className="x_price_container flex items-center gap-2">
+                    <span className="x_current_price text-xl font-bold text-gray-900">
+                      ₹{product.price}
+                    </span>
+                    {product.originalPrice && (
+                      <span className="x_original_price text-sm text-gray-500 line-through">
+                        ₹{product.originalPrice}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500">No products found.</div>
+          )}
         </div>
       </div>
     </>
