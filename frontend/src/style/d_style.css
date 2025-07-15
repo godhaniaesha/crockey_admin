@@ -2,8 +2,11 @@
 .d_sidebar {
   background: #fff; /* or use #f5f8fa for a very light blue */
 }
-.d_menu_item, .d_logo, .d_icon, .d_avatar {
+.d_menu_item, .d_logo, .d_icon {
   color: #254D70 !important;
+}
+.z_custom_dropdown .d_avatar{
+  color: white !important;
 }
 .d_menu_item:hover, .d_menu_item:focus, .d_active, .d_hover {
   color: #254D70 !important;
@@ -305,7 +308,7 @@
   }
   .d_MP-btn {
     font-size: 1rem;
-    padding: 0.7rem 0;
+    padding: 0.7rem 14px;
   }
 }
 .d_MP-color-selector {
@@ -2122,9 +2125,10 @@
   border: 1.5px solid #e5e7eb;
   border-radius: 12px;
   box-shadow: 0 8px 32px 0 rgba(37,77,112,0.13);
-  z-index: 100;
+  z-index: 1000;
   padding: 6px 0;
   animation: z_custom_dropdownFadeIn 0.18s;
+  pointer-events: auto;
 }
 @keyframes z_custom_dropdownFadeIn {
   from { opacity: 0; transform: translateY(-8px); }
@@ -2146,8 +2150,16 @@
   transition: background 0.16s, color 0.16s;
   border-radius: 8px;
   text-align: left;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1001;
+  user-select: none;
 }
 .z_custom_dropdownItem:hover, .z_custom_dropdownItem:focus {
   background: #e6eef5;
   color: #193a5e;
+}
+.z_custom_dropdownItem:active {
+  background: #d1e7dd;
+  color: #0f5132;
 }

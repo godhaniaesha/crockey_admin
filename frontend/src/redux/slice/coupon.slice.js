@@ -5,9 +5,12 @@ export const fetchCoupons = createAsyncThunk(
   'coupon/fetchCoupons',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/coupon/');
+      const response = await axios.get('http://localhost:5000/api/coupons/');
+      console.log("Coupons response:", response);
+      
       return response.data;
     } catch (error) {
+      console.error("Error fetching coupons:", error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -19,7 +22,7 @@ export const createCoupon = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/coupon/', couponData, config);
+      const response = await axios.post('http://localhost:5000/api/coupons/', couponData, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -33,7 +36,7 @@ export const updateCoupon = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.put(`http://localhost:5000/api/coupon/${id}`, couponData, config);
+      const response = await axios.put(`http://localhost:5000/api/coupons/${id}`, couponData, config);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -47,7 +50,7 @@ export const deleteCoupon = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:5000/api/coupon/${id}`, config);
+      await axios.delete(`http://localhost:5000/api/coupons/${id}`, config);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

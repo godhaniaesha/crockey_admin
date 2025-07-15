@@ -53,14 +53,34 @@ exports.salesOverview = async (req, res) => {
 exports.categoryDistribution = async (req, res) => {
     try {
         const dist = await Product.aggregate([
-            { $group: { _id: '$category_id', count: { $sum: 1 } } }
+            {
+                $group: {
+                    _id: "$category_id",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "categories", // must match the actual collection name
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "category"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$category",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    category: { $ifNull: ["$category.name", "Unknown"] },
+                    count: 1
+                }
+            }
         ]);
-        const categories = await Category.find({ _id: { $in: dist.map(d => d._id) } });
-        const result = dist.map(d => ({
-            category: categories.find(c => c._id.equals(d._id))?.name || 'Unknown',
-            count: d.count
-        }));
-        res.json(result);
+        res.json(dist);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

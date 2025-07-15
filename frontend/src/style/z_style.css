@@ -2277,7 +2277,7 @@
   color: #254d70;
 }
 .z_coupon_editBtn:hover {
-  background: #b2ebf2;
+  background: #f5f8f8;
   color: #004d40;
   box-shadow: 0 4px 16px rgba(0, 121, 107, 0.15);
   transform: scale(1.08);
@@ -2317,7 +2317,7 @@
   background-color: #e5e7eb;
   border-radius: 24px;
   transition: background 0.3s;
-  background: #fff;
+  background: #c9cacc;
 }
 .z_coupon_switch input:checked + .z_coupon_slider {
   background: #254d70;
@@ -3056,7 +3056,7 @@
 
 .z_prof_banner {
   height: 86px;
-  background: linear-gradient(135deg, #254d70 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #254d70 0%, #38598f 100%);
 }
 
 .z_prof_content {
@@ -3093,7 +3093,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -45px;
+  margin-top: -27px;
 }
 
 /* .z_prof_manage {
@@ -3102,8 +3102,8 @@
 } */
 
 .z_prof_avatar {
-  width: 100%;
-  height: 100%;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
 }
 
@@ -3277,7 +3277,7 @@
     margin-top: 45px !important;
   }
   .z_prof_left {
-    flex-direction: column;
+    /* flex-direction: column; */
     gap: 12px;
     align-items: flex-start;
   }
@@ -3308,7 +3308,7 @@
   .z_prof_avatar_wrapper {
     width: 80px;
     height: 80px;
-    margin-top: -30px;
+    margin-top: -20px;
   }
   .z_prof_avatar {
     width: 80px;
@@ -3352,7 +3352,7 @@
   .z_prof_avatar_wrapper {
     width: 60px;
     height: 60px;
-    margin-top: -20px;
+    margin-top: -5px;
   }
   .z_prof_avatar {
     width: 60px;
@@ -3832,4 +3832,32 @@
 
 .z_dltModal_noRadius {
   border-radius: 0 !important;
+}
+
+/* Camera icon overlay for profile image */
+.profile-camera-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.profile-camera-icon {
+  font-size: 24px;
+}
+
+@media (max-width: 600px) {
+  .profile-camera-overlay {
+    padding: 5px;
+  }
+  .profile-camera-icon {
+    font-size: 16px;
+  }
 }

@@ -1,0 +1,26 @@
+.db_spinner_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full screen */
+    background-color: #f9f9f9; /* Optional background */
+  }
+  
+  .db_spinner_loader {
+    border: 8px solid #e0e0e0; /* Light grey */
+    border-top: 8px solid #254D70; /* Spinner color */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: db_spinner_spin 1s linear infinite;
+  }
+  
+  @keyframes db_spinner_spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  

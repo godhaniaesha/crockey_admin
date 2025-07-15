@@ -1,47 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getProductById, clearSingleProduct } from '../redux/slice/product.slice';
 import '../style/d_style.css';
 import { FaStar, FaRegStar, FaTruck, FaUndoAlt, FaTag, FaCheckCircle } from 'react-icons/fa';
-
-const dummyProduct = {
-  name: 'Elegant Ceramic Plate',
-  price: 299,
-  discountPrice: 249,
-  description: 'This elegant ceramic plate is perfect for serving your favorite dishes. Crafted with high-quality materials, it is both durable and stylish, making it a great addition to any kitchen or dining room. The unique matte finish and premium feel make it a must-have for every home chef.',
-  category: 'Crockery',
-  brand: "Levi's",
-  sku: 'PLT-2024-ELG',
-  images: [
-    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=600&q=80',
-  ],
-  colors: [
-    { name: 'Blue', code: '#254D70' },
-    { name: 'Red', code: '#E63946' },
-    { name: 'Yellow', code: '#F1C40F' },
-    { name: 'Green', code: '#2ECC40' },
-  ],
-  sizes: ['6 inch', '8 inch', '10 inch', '12 inch'],
-  stock: 12,
-  highlights: [
-    'Premium ceramic material',
-    'Microwave & dishwasher safe',
-    'Elegant matte finish',
-    'Scratch-resistant',
-    'Lead-free & eco-friendly', 
-    'Handcrafted design',
-  ],
-  rating: 4.7,
-  reviews: 54,
-  badges: ['Best Seller', 'New Arrival'],
-  delivery: 'Free delivery in 2-4 days',
-  returnPolicy: 'Easy 7-day return & exchange',
-};
+import Spinner from "./Spinner";
 
 function ProductDetail() {
-  const [mainImg, setMainImg] = useState(dummyProduct.images[0]);
+  const [searchParams] = useSearchParams();
+  const productId = searchParams.get('id');
+  const dispatch = useDispatch();
+  const { singleProduct, loading, error } = useSelector(state => state.product);
+  const [mainImg, setMainImg] = useState('');
   const [activeTab, setActiveTab] = useState('Description');
+
+  useEffect(() => {
+    if (productId) {
+      dispatch(getProductById(productId));
+    }
+    
+    // Cleanup function to clear single product when component unmounts
+    return () => {
+      dispatch(clearSingleProduct());
+    };
+  }, [dispatch, productId]);
+
+  useEffect(() => {
+    if (singleProduct && singleProduct.images && singleProduct.images.length > 0) {
+      setMainImg(`http://localhost:5000/uploads/${singleProduct.images[0]}`);
+    }
+  }, [singleProduct]);
+
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="pd-bg">
+        <div className="pd-card">
+          <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
+            <h3>Error: {error}</h3>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!singleProduct) {
+    return (
+      <div className="pd-bg">
+        <div className="pd-card">
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <h3>Product not found</h3>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate discount price if discount exists
+  const discountPrice = singleProduct.discount 
+    ? singleProduct.price - (singleProduct.price * singleProduct.discount / 100)
+    : singleProduct.price;
+
+  // Process colors array
+  const colorArray = Array.isArray(singleProduct.colors)
+    ? (typeof singleProduct.colors[0] === 'string' && singleProduct.colors[0].includes(',') 
+        ? singleProduct.colors[0].split(',').map(c => c.trim()) 
+        : singleProduct.colors)
+    : [];
+
+  // Create color objects for display
+  const colors = colorArray.map(color => ({
+    name: color,
+    code: color === "Transparent" ? "#ffffff" :
+          color === "Ivory" ? "#fffff0" :
+          color === "Cream" ? "#fffdd0" :
+          color === "Beige" ? "#f5f5dc" :
+          color === "Silver" ? "#c0c0c0" :
+          color === "White" ? "#ffffff" :
+          color === "Black" ? "#000000" : color
+  }));
+
+  // Generate highlights from product data
+  const highlights = [
+    singleProduct.brand && `Brand: ${singleProduct.brand}`,
+    singleProduct.weight && `Weight: ${singleProduct.weight}`,
+    singleProduct.pattern && `Pattern: ${singleProduct.pattern}`,
+    singleProduct.active ? 'In Stock' : 'Out of Stock',
+    'Premium Quality',
+    'Durable Material'
+  ].filter(Boolean);
 
   return (
     <div className="pd-bg">
@@ -49,16 +99,16 @@ function ProductDetail() {
         <div className="pd-main-row">
           <div className="pd-img-col">
             <div className="pd-img-frame">
-              <img src={mainImg} alt={dummyProduct.name} className="pd-img" />
+              <img src={mainImg} alt={singleProduct.name} className="pd-img" />
               <div className="pd-thumbs">
-                {dummyProduct.images.map((img, idx) => (
+                {singleProduct.images && singleProduct.images.map((img, idx) => (
                   <button
                     key={img}
-                    className={`pd-thumb${mainImg === img ? ' pd-thumb-active' : ''}`}
-                    onClick={() => setMainImg(img)}
+                    className={`pd-thumb${mainImg === `http://localhost:5000/uploads/${img}` ? ' pd-thumb-active' : ''}`}
+                    onClick={() => setMainImg(`http://localhost:5000/uploads/${img}`)}
                     aria-label={`Show image ${idx + 1}`}
                   >
-                    <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                    <img src={`http://localhost:5000/uploads/${img}`} alt={`Thumbnail ${idx + 1}`} />
                   </button>
                 ))}
               </div>
@@ -66,36 +116,40 @@ function ProductDetail() {
           </div>
           <div className="pd-info-col">
             {/* SKU and Badges */}
-            <div className='sm:justify-start justify-center' style={{ display: 'flex', alignItems: 'center',flexWrap:'wrap', marginBottom: 8, gap: 12 }}>
-              <span style={{ color: '#6b7280', fontSize: 14 }}>SKU: {dummyProduct.sku}</span>
-              {dummyProduct.badges.map((badge, i) => (
-                <span key={badge} style={{ display: 'flex', alignItems: 'center', background: '#e6eef5', color: '#254D70', borderRadius: 12, padding: '2px 10px', fontSize: 13, fontWeight: 600, marginLeft: i === 0 ? 12 : 6 }}>
-                  <FaTag style={{ marginRight: 4, fontSize: 14 }} /> {badge}
+            <div className='sm:justify-start justify-center' style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, gap: 12 }}>
+              <span style={{ color: '#6b7280', fontSize: 14 }}>SKU: {singleProduct._id}</span>
+              {singleProduct.active && (
+                <span style={{ display: 'flex', alignItems: 'center', background: '#e6eef5', color: '#254D70', borderRadius: 12, padding: '2px 10px', fontSize: 13, fontWeight: 600 }}>
+                  <FaTag style={{ marginRight: 4, fontSize: 14 }} /> Active
                 </span>
-              ))}
+              )}
             </div>
             {/* Product Name */}
-            <h1 className="pd-title">{dummyProduct.name}</h1>
+            <h1 className="pd-title">{singleProduct.name}</h1>
             {/* Price, Discount */}
             <div className="pd-price-row" style={{ alignItems: 'center', gap: 12 }}>
-              <span className="pd-price">₹{dummyProduct.discountPrice}</span>
-              <span className="pd-oldprice">₹{dummyProduct.price}</span>
-              <span className="pd-discount">({Math.round(100 - (dummyProduct.discountPrice / dummyProduct.price) * 100)}% OFF)</span>
+              <span className="pd-price">₹{discountPrice}</span>
+              {singleProduct.discount && (
+                <>
+                  <span className="pd-oldprice">₹{singleProduct.price}</span>
+                  <span className="pd-discount">({singleProduct.discount}% OFF)</span>
+                </>
+              )}
             </div>
             {/* Rating and Reviews */}
             <div className="pd-rating-row" style={{ alignItems: 'center', gap: 10 }}>
               <span className="pd-rating" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <FaStar style={{ color: '#F1C40F', fontSize: 18, marginRight: 2 }} />
-                {dummyProduct.rating}
+                4.5
               </span>
               <span className="pd-reviews" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280', fontSize: 14 }}>
                 <FaRegStar style={{ fontSize: 15 }} />
-                ({dummyProduct.reviews} reviews)
+                (0 reviews)
               </span>
             </div>
             {/* Key Highlights */}
             <ul className="pd-key-highlights" style={{ marginBottom: 10 }}>
-              {dummyProduct.highlights.slice(0, 3).map((h, i) => (
+              {highlights.slice(0, 3).map((h, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15 }}>
                   <FaCheckCircle style={{ color: '#2ECC40', fontSize: 15 }} /> {h}
                 </li>
@@ -103,21 +157,22 @@ function ProductDetail() {
             </ul>
             {/* Meta Info */}
             <div className="pd-meta-row" style={{ gap: 10, fontSize: 15 }}>
-              <span className="pd-category">{dummyProduct.category}</span>
-              <span className="pd-brand">{dummyProduct.brand}</span>
-              <span className={`pd-stock ${dummyProduct.stock > 0 ? 'pd-instock' : 'pd-outstock'}`}>{dummyProduct.stock > 0 ? 'In Stock' : 'Out of Stock'}</span>
+              <span className="pd-category">{singleProduct.category_id?.name || 'Category'}</span>
+              <span className="pd-brand">{singleProduct.brand || 'Brand'}</span>
+              <span className={`pd-stock ${singleProduct.stock > 0 ? 'pd-instock' : 'pd-outstock'}`}>
+                {singleProduct.stock > 0 ? `In Stock (${singleProduct.stock})` : 'Out of Stock'}
+              </span>
             </div>
             {/* Add to Cart */}
-         <div className='flex align-center justify-center'>
-         <button className="pd-btn " style={{ marginTop: 18, fontWeight: 700, fontSize: 17, display: 'flex',padding:'12px 81px', width:'fit-content', alignItems: 'center',justifyContent:'center', gap: 8, boxShadow: '0 2px 8px 0 #254D7033' }}>
-              
-              Add to Cart
-            </button>
-         </div>
+            <div className='flex align-center justify-center'>
+              <button className="pd-btn" style={{ marginTop: 18, fontWeight: 700, fontSize: 17, display: 'flex', padding: '12px 81px', width: 'fit-content', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 2px 8px 0 #254D7033' }}>
+                Add to Cart
+              </button>
+            </div>
           </div>
         </div>
         <div className="pd-tabs">
-          <div className="pd-tab-list w-full" style={{overflowX:'auto'}}>
+          <div className="pd-tab-list w-full" style={{ overflowX: 'auto' }}>
             {['Description', 'Details', 'Reviews'].map(tab => (
               <button
                 key={tab}
@@ -130,17 +185,42 @@ function ProductDetail() {
           </div>
           <div className="pd-tab-panel">
             {activeTab === 'Description' && (
-              <p style={{ fontSize: 16, lineHeight: 1.7 }}>{dummyProduct.description}</p>
+              <p style={{ fontSize: 16, lineHeight: 1.7 }}>
+                {singleProduct.long_description || singleProduct.short_description || 'No description available.'}
+              </p>
             )}
             {activeTab === 'Details' && (
               <div>
-                <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><b>Colors:</b> {dummyProduct.colors.map(c => <span key={c.code} className="pd-color-dot" style={{ backgroundColor: c.code }} title={c.name}></span>)}</div>
-                <div className="pd-detail-row"><b>Sizes:</b> {dummyProduct.sizes.join(', ')}</div>
-                <div className="pd-detail-row"><b>Highlights:</b>
-                  <ul className="pd-highlights">{dummyProduct.highlights.map((h, i) => <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FaCheckCircle style={{ color: '#2ECC40', fontSize: 15 }} /> {h}</li>)}</ul>
+                {colors.length > 0 && (
+                  <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <b>Colors:</b> {colors.map(c => (
+                      <span key={c.code} className="pd-color-dot" style={{ backgroundColor: c.code }} title={c.name}></span>
+                    ))}
+                  </div>
+                )}
+                {singleProduct.sizes && singleProduct.sizes.length > 0 && (
+                  <div className="pd-detail-row">
+                    <b>Sizes:</b> {singleProduct.sizes.join(', ')}
+                  </div>
+                )}
+                <div className="pd-detail-row">
+                  <b>Highlights:</b>
+                  <ul className="pd-highlights">
+                    {highlights.map((h, i) => (
+                      <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <FaCheckCircle style={{ color: '#2ECC40', fontSize: 15 }} /> {h}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><FaTruck style={{ color: '#254D70', fontSize: 16 }} /><b>Delivery:</b> {dummyProduct.delivery}</div>
-                <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><FaUndoAlt style={{ color: '#254D70', fontSize: 16 }} /><b>Return Policy:</b> {dummyProduct.returnPolicy}</div>
+                <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FaTruck style={{ color: '#254D70', fontSize: 16 }} />
+                  <b>Delivery:</b> Free delivery in 2-4 days
+                </div>
+                <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FaUndoAlt style={{ color: '#254D70', fontSize: 16 }} />
+                  <b>Return Policy:</b> Easy 7-day return & exchange
+                </div>
               </div>
             )}
             {activeTab === 'Reviews' && (

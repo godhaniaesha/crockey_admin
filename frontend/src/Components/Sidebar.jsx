@@ -54,15 +54,6 @@ const menu = [
         ]
     },
     {
-        name: 'Customers',
-        icon: <UsersIcon className='w-6 h-6 d_icon' />,
-        link: '/customer',
-        submenu: [
-            { name: 'Customer List', link: '/customer/list' },
-            { name: 'Add Customer', link: '/customer/add' }
-        ]
-    },
-    {
         name: 'Coupons',
         icon: <GiftIcon className='w-6 h-6 d_icon' />,
         link: '/coupons',

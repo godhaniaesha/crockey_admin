@@ -5,6 +5,7 @@ import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
+import Spinner from "./Spinner";
 
 // Sample data for fallback
 const sampleData = [];
@@ -100,14 +101,7 @@ function CategoryList(props) {
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="z_catList_container">
-        <div className="z_manage_content">
-          <h3 className="z_catList_title">Categories List</h3>
-          <div>Loading categories...</div>
-        </div>
-      </div>
-    );
+    return <Spinner />;
   }
 
   // Show error state

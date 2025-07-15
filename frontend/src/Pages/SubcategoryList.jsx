@@ -6,6 +6,7 @@ import { RiDeleteBin5Fill, RiEdit2Fill, RiSearchLine } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import { useNavigate, useParams } from "react-router-dom";
 import { toggleSubcategoryStatus } from "../redux/slice/subcat.slice.jsx";
+import Spinner from "./Spinner";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -72,7 +73,7 @@ function SubcategoryList(props) {
   };
 
   if (loading) {
-    return <div className="z_subcat_container">Loading subcategories...</div>;
+    return <Spinner />;
   }
   if (error) {
     return <div className="z_subcat_container">Error: {error}</div>;
