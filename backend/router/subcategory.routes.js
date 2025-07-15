@@ -43,4 +43,7 @@ router.get('/:id', getSubcategoryById); // Public access for viewing subcategory
 router.put('/:id', requireAdmin, upload.single('image'), updateSubcategory);
 router.delete('/:id', requireAdmin, deleteSubcategory);
 
+// Add this route for toggling subcategory status
+router.patch('/:id/toggle-status', require('../controller/subcategory.controller').toggleSubcategoryStatus);
+
 module.exports = router; 

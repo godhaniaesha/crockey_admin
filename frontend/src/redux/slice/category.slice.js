@@ -89,6 +89,28 @@ export const deleteCategory = createAsyncThunk(
   }
 );
 
+export const toggleCategoryStatus = createAsyncThunk(
+  'category/toggleCategoryStatus',
+  async (id, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.patch(
+        `http://localhost:5000/api/categories/${id}/toggle-status`,
+        {},
+        config
+      );
+      return response.data.category || response.data.result || response.data; // Adjust based on backend
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 
 const categorySlice = createSlice({
     name: 'category',
@@ -181,6 +203,25 @@ const categorySlice = createSlice({
   }
 })
 .addCase(deleteCategory.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
+.addCase(toggleCategoryStatus.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(toggleCategoryStatus.fulfilled, (state, action) => {
+  state.loading = false;
+  // Update the category status in the list
+  if (Array.isArray(state.categories?.result)) {
+    const idx = state.categories.result.findIndex(cat => cat._id === action.payload._id);
+    if (idx !== -1) state.categories.result[idx] = action.payload;
+  } else if (Array.isArray(state.categories)) {
+    const idx = state.categories.findIndex(cat => cat._id === action.payload._id);
+    if (idx !== -1) state.categories[idx] = action.payload;
+  }
+})
+.addCase(toggleCategoryStatus.rejected, (state, action) => {
   state.loading = false;
   state.error = action.payload;
 })

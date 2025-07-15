@@ -1,4 +1,6 @@
 const Subcategory = require('../model/subcategory.model');
+const Product = require('../model/product.model');
+const Category = require('../model/category.model');
 
 // Create a new subcategory
 exports.createSubcategory = async (req, res) => {
@@ -82,6 +84,12 @@ exports.toggleSubcategoryStatus = async (req, res) => {
         
         subcategory.active = !subcategory.active;
         await subcategory.save();
+
+        // Cascade to products
+        await Product.updateMany(
+            { subcategory_id: subcategory._id },
+            { $set: { active: subcategory.active } }
+        );
         
         res.status(200).json({
             message: `Subcategory ${subcategory.active ? 'activated' : 'deactivated'} successfully`,
@@ -101,4 +109,35 @@ exports.deleteSubcategory = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}; 
+};
+
+exports.toggleCategoryStatus = async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id);
+        if (!category) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
+        
+        category.active = !category.active;
+        await category.save();
+
+        // Cascade to subcategories
+        await Subcategory.updateMany(
+            { category_id: category._id },
+            { $set: { active: category.active } }
+        );
+
+        // Cascade to products
+        await Product.updateMany(
+            { category_id: category._id },
+            { $set: { active: category.active } }
+        );
+        
+        res.status(200).json({
+            message: `Category ${category.active ? 'activated' : 'deactivated'} successfully`,
+            category
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};

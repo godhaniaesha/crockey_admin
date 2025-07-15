@@ -5,6 +5,7 @@ import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill, RiSearchLine } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import { useNavigate, useParams } from "react-router-dom";
+import { toggleSubcategoryStatus } from "../redux/slice/subcat.slice.jsx";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -17,6 +18,7 @@ function SubcategoryList(props) {
   const { id } = useParams();
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [deleteId, setDeleteId] = React.useState(null);
+  const [togglingSubcatId, setTogglingSubcatId] = React.useState(null);
 
   const openDeleteModal = (id) => {
     setDeleteId(id);
@@ -53,9 +55,16 @@ function SubcategoryList(props) {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleStatusToggle = (id) => {
-    // TODO: Implement status toggle functionality with API call
-    console.log("Toggle status for subcategory ID:", id);
+  const handleStatusToggle = async (id) => {
+    setTogglingSubcatId(id);
+    const result = await dispatch(toggleSubcategoryStatus(id));
+    setTogglingSubcatId(null);
+
+    if (result.meta.requestStatus === 'rejected') {
+      alert("Error toggling subcategory status: " + result.payload);
+    } else {
+      dispatch(fetchSubcategories()); // Refresh to get correct status and data
+    }
   };
 
   const handlePageChange = (page) => {
@@ -123,11 +132,27 @@ function SubcategoryList(props) {
                   <label className="z_subcat_switch">
                     <input
                       type="checkbox"
-                      checked={item.status || false}
+                      checked={item.active || false}
                       onChange={() => handleStatusToggle(item._id || item.subcat_id)}
+                      disabled={togglingSubcatId === (item._id || item.subcat_id)}
                     />
                     <span className="z_subcat_slider"></span>
                   </label>
+                  {/* <span
+                    style={{
+                      marginLeft: '10px',
+                      color: item.active ? 'green' : 'red',
+                      fontWeight: 500,
+                      textTransform: 'capitalize',
+                    }}
+                  >
+                     {item.active ? 'activated' : 'deactivated'}
+                  </span> */}
+                  {togglingSubcatId === (item._id || item.subcat_id) && (
+                    <span style={{ marginLeft: '5px', fontSize: '12px', color: '#666' }}>
+                      Updating...
+                    </span>
+                  )}
                 </td>
                 <td className="z_subcat_td">
                   <button

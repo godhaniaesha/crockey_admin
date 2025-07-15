@@ -9,7 +9,7 @@ export const fetchProducts = createAsyncThunk(
       const config = token
         ? { headers: { Authorization: `Bearer ${token}` } }
         : {};
-      const response = await axios.get('http://localhost:5000/api/products/', config);
+      const response = await axios.get('http://localhost:5000/api/products?active=all', config);
       console.log("Product fetched..!!", response.data)
       return response.data;
     } catch (error) {
@@ -70,6 +70,52 @@ export const updateProduct = createAsyncThunk(
   }
 );
 
+export const deleteProduct = createAsyncThunk(
+  'product/deleteProduct',
+  async (id, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.delete(
+        `http://localhost:5000/api/products/${id}`,
+        config
+      );
+      return { id, message: response.data.message };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+export const toggleProductStatus = createAsyncThunk(
+  'product/toggleProductStatus',
+  async (id, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      console.log('Toggling product status for ID:', id);
+      const response = await axios.patch(
+        `http://localhost:5000/api/products/${id}/toggle-status`,
+        {},
+        config
+      );
+      console.log('Toggle response:', response.data);
+      return response.data.product; // Return the product object, not the full response
+    } catch (error) {
+      console.error('Toggle error:', error.response || error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: 'product',
   initialState: {
@@ -125,6 +171,42 @@ const productSlice = createSlice({
         }
       })
       .addCase(updateProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteProduct.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the deleted product from the list
+        if (Array.isArray(state.products?.result)) {
+          state.products.result = state.products.result.filter(p => p._id !== action.payload.id);
+        } else if (Array.isArray(state.products)) {
+          state.products = state.products.filter(p => p._id !== action.payload.id);
+        }
+      })
+      .addCase(deleteProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(toggleProductStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(toggleProductStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the product status in the list
+        if (Array.isArray(state.products?.result)) {
+          const idx = state.products.result.findIndex(p => p._id === action.payload._id);
+          if (idx !== -1) state.products.result[idx] = action.payload;
+        } else if (Array.isArray(state.products)) {
+          const idx = state.products.findIndex(p => p._id === action.payload._id);
+          if (idx !== -1) state.products[idx] = action.payload;
+        }
+      })
+      .addCase(toggleProductStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
