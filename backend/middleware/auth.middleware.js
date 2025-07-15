@@ -195,7 +195,7 @@ const requireOwnership = async (req, res, next) => {
 // Middleware to check if seller owns the resource
 const requireSellerOwnership = async (req, res, next) => {
     try {
-        await authenticateToken(req, res, (err) => {
+        await authenticateToken(req, res, async (err) => {
             if (err) return next(err);
             
             if (req.user.role !== 'seller') {
@@ -205,14 +205,76 @@ const requireSellerOwnership = async (req, res, next) => {
                 });
             }
             
-            const resourceSellerId = req.params.sellerId || req.params.id;
+            // For product routes, check if the seller owns the product
+            if (req.baseUrl.includes('/product') || req.route.path.includes('/product')) {
+                const Product = require('../model/product.model');
+                const product = await Product.findById(req.params.id);
+                
+                if (!product) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Product not found'
+                    });
+                }
+                
+                // Check if the seller owns this product
+                if (product.user_id.toString() !== req.user._id.toString()) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Access denied. You can only access your own products.'
+                    });
+                }
+            } else {
+                // For other routes, use the original logic
+                const resourceSellerId = req.params.sellerId || req.params.id;
+                
+                if (req.user._id.toString() !== resourceSellerId) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Access denied. You can only access your own data.'
+                    });
+                }
+            }
             
-            // Check if the seller owns this resource
-            if (req.user._id.toString() !== resourceSellerId) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Access denied. You can only access your own data.'
-                });
+            next();
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Authorization error'
+        });
+    }
+};
+
+// Middleware specifically for product ownership
+const requireProductOwnership = async (req, res, next) => {
+    try {
+        await authenticateToken(req, res, async (err) => {
+            if (err) return next(err);
+            
+            // Admin can access any product
+            if (req.user.role === 'admin') {
+                return next();
+            }
+            
+            // Seller can only access their own products
+            if (req.user.role === 'seller') {
+                const Product = require('../model/product.model');
+                const product = await Product.findById(req.params.id);
+                
+                if (!product) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Product not found'
+                    });
+                }
+                
+                if (product.user_id.toString() !== req.user._id.toString()) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Access denied. You can only access your own products.'
+                    });
+                }
             }
             
             next();
@@ -233,5 +295,6 @@ module.exports = {
     requireAdminOrSeller,
     requireAdminOrUser,
     requireOwnership,
-    requireSellerOwnership
+    requireSellerOwnership,
+    requireProductOwnership
 }; 

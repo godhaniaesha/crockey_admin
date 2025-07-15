@@ -3,7 +3,7 @@ import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill, RiSearchLine, RiEyeFill } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts, updateProduct } from "../redux/slice/product.slice";
+import { fetchProducts, updateProduct, deleteProduct, toggleProductStatus } from "../redux/slice/product.slice";
 import { fetchCategories } from "../redux/slice/category.slice";
 import { fetchSubcategories } from "../redux/slice/subcat.slice.jsx";
 import { useParams, useNavigate } from "react-router-dom";
@@ -19,6 +19,11 @@ function ProductTable() {
   const [search, setSearch] = useState("");
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [deleteMessage, setDeleteMessage] = useState("");
+  const [deletingProductId, setDeletingProductId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [togglingProductId, setTogglingProductId] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -27,6 +32,14 @@ function ProductTable() {
     dispatch(fetchCategories());
     dispatch(fetchSubcategories());
   }, [dispatch]);
+
+  // Handle delete success message
+  useEffect(() => {
+    if (deleteMessage) {
+      // alert(deleteMessage);
+      setDeleteMessage("");
+    }
+  }, [deleteMessage]);
 
   // Support both array and {result: array} API responses
   const safeProducts = Array.isArray(products?.result)
@@ -45,12 +58,12 @@ function ProductTable() {
     ? subcategories
     : [];
 
-  const filteredData = safeProducts.filter(
-    (item) =>
-      (item.name?.toLowerCase().includes(search.toLowerCase()) ||
-        (item.category?.name || item.category || "").toLowerCase().includes(search.toLowerCase()) ||
-        (item.subcategory?.name || item.subcategory || "").toLowerCase().includes(search.toLowerCase()))
-  );
+    const filteredData = safeProducts.filter(
+      (item) =>
+        (item.name?.toLowerCase().includes(search.toLowerCase()) ||
+          (item.category?.name || item.category || "").toLowerCase().includes(search.toLowerCase()) ||
+          (item.subcategory?.name || item.subcategory || "").toLowerCase().includes(search.toLowerCase()))
+    );
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = filteredData.slice(
@@ -58,10 +71,41 @@ function ProductTable() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleStatusToggle = (id) => {
-    // Implement status toggle API if needed
-    // For now, just log
-    console.log("Toggle status for product ID:", id);
+  const handleStatusToggle = async (id) => {
+    setTogglingProductId(id);
+    const result = await dispatch(toggleProductStatus(id));
+    setTogglingProductId(null);
+
+    if (result.meta.requestStatus === 'rejected') {
+      console.error("Toggle error:", result.payload);
+      alert("Error toggling product status: " + result.payload);
+    } else {
+      // Refetch products to get updated category/subcategory info
+      dispatch(fetchProducts());
+    }
+  };
+
+  const openDeleteModal = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  };
+
+  const confirmDelete = async () => {
+    setDeletingProductId(deleteId);
+    const result = await dispatch(deleteProduct(deleteId));
+    setDeletingProductId(null);
+    closeDeleteModal();
+    
+    if (result.meta.requestStatus === 'fulfilled') {
+      setDeleteMessage("Product deleted successfully!");
+    } else if (result.meta.requestStatus === 'rejected') {
+      alert("Error deleting product: " + result.payload);
+    }
   };
 
   const handlePageChange = (page) => {
@@ -74,6 +118,8 @@ function ProductTable() {
   if (error) {
     return <div className="z_prd_container">Error: {error}</div>;
   }
+
+  console.log("Products being rendered:", filteredData);
 
   return (
     <div className="z_prd_container">
@@ -93,7 +139,12 @@ function ProductTable() {
             />
             <RiSearchLine className="z_prd_searchIcon" />
           </div>
-          <button className="z_prd_addBtn">+ Add Product</button>
+          <button 
+            className="z_prd_addBtn" 
+            onClick={() => navigate('/product/add')}
+          >
+            + Add Product
+          </button>
         </div>
       </div>
 
@@ -169,10 +220,26 @@ function ProductTable() {
                       <input
                         type="checkbox"
                         checked={item.active || false}
-                        onChange={() => {/* handle status toggle */}}
+                        onChange={() => handleStatusToggle(item._id || item.id)}
+                        disabled={togglingProductId === (item._id || item.id)}
                       />
                       <span className="z_prd_slider"></span>
                     </label>
+                    <span
+                      style={{
+                        marginLeft: '10px',
+                        color: item.active ? 'green' : 'red',
+                        fontWeight: 500,
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {/* {item.active ? 'activated' : 'deactivated'} */}
+                    </span>
+                    {togglingProductId === (item._id || item.id) && (
+                      <span style={{ marginLeft: '5px', fontSize: '12px', color: '#666' }}>
+                        Updating...
+                      </span>
+                    )}
                   </td>
                   <td className="z_prd_td">
                     <button
@@ -194,11 +261,14 @@ function ProductTable() {
                     <button
                       className="z_prd_actionBtn z_prd_deleteBtn"
                       title="Delete"
-                      onClick={() => {
-                        // TODO: Delete product
-                      }}
+                      onClick={() => openDeleteModal(item._id || item.id)}
+                      disabled={deletingProductId === (item._id || item.id)}
                     >
-                      <RiDeleteBin5Fill />
+                      {deletingProductId === (item._id || item.id) ? (
+                        <span>...</span>
+                      ) : (
+                        <RiDeleteBin5Fill />
+                      )}
                     </button>
                   </td>
                 </tr>
@@ -234,6 +304,40 @@ function ProductTable() {
           <GrCaretNext />
         </button>
       </div>
+      {showDeleteModal && (
+        <div className="z_dltModal_overlay">
+          <div className="z_dltModal_content z_dltModal_noRadius">
+            {deleteId && (() => {
+              const product = safeProducts.find(p => p._id === deleteId || p.id === deleteId);
+              return product ? (
+                <img
+                  src={product.images && product.images.length > 0
+                    ? `http://localhost:5000/uploads/${product.images[0]}`
+                    : "https://via.placeholder.com/50"}
+                  alt={product.name}
+                  className="z_dltModal_img"
+                />
+              ) : null;
+            })()}
+            <h2 className="z_dltModal_title">Delete Product</h2>
+            <p className="z_dltModal_text">
+              Are you sure you want to delete <b>{safeProducts.find(p => p._id === deleteId || p.id === deleteId)?.name}</b>?
+            </p>
+            <div className="z_dltModal_btnGroup">
+              <button className="z_dltModal_btn z_dltModal_cancel" onClick={closeDeleteModal}>
+                Cancel
+              </button>
+              <button 
+                className="z_dltModal_btn z_dltModal_confirm" 
+                onClick={confirmDelete}
+                disabled={deletingProductId === deleteId}
+              >
+                {deletingProductId === deleteId ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

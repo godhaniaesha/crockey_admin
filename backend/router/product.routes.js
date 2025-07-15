@@ -6,12 +6,13 @@ const {
     getProductById,
     updateProduct,
     deleteProduct,
-    getLowStockProducts
+    getLowStockProducts,
+    toggleProductStatus
 } = require('../controller/product.controller');
 const { 
     requireAdmin, 
     requireAdminOrSeller, 
-    requireSellerOwnership,
+    requireProductOwnership,
     authenticateToken 
 } = require('../middleware/auth.middleware');
 const multer = require('multer');
@@ -33,16 +34,19 @@ router.post('/', requireAdminOrSeller, upload.array('images',5), createProduct);
 // Read all products (public access)
 router.get('/', getAllProducts);
 
+// Get low stock products (admin only) - must come before /:id route
+router.get('/low-stock', requireAdmin, getLowStockProducts);
+
+// Toggle product status (admin or seller with ownership) - must come before /:id route
+router.patch('/:id/toggle-status', requireProductOwnership, toggleProductStatus);
+
 // Read one product (public access)
 router.get('/:id', getProductById);
 
 // Update product (admin or seller with ownership)
-router.put('/:id', requireAdminOrSeller, requireSellerOwnership, upload.array('images',5), updateProduct);
+router.put('/:id', requireProductOwnership, upload.array('images',5), updateProduct);
 
 // Delete product (admin or seller with ownership)
-router.delete('/:id', requireAdminOrSeller, requireSellerOwnership, deleteProduct);
-
-// Get low stock products (admin only)
-router.get('/low-stock', requireAdmin, getLowStockProducts);
+router.delete('/:id', requireProductOwnership, deleteProduct);
 
 module.exports = router; 

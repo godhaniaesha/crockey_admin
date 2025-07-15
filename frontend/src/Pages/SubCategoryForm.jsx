@@ -12,7 +12,7 @@ const SubCategoryForm = () => {
     const inputRef = useRef(null);
     const [categoryOpen, setCategoryOpen] = useState(false);
     const categoryRef = useRef(null);
-    const { categories } = useSelector(state => state.category);
+    const { categories = [] } = useSelector((state) => state.category) || {};
     const safeCategories = Array.isArray(categories?.result)
         ? categories.result
         : Array.isArray(categories)
@@ -185,7 +185,7 @@ const SubCategoryForm = () => {
                                 role="button"
                             >
                                 <div className="d_MP-dropdown-selected">
-                                    {form.category_id ? categories.result.find(cat => cat._id === form.category_id)?.name : 'Select category'}
+                                    {form.category_id ? safeCategories.find(cat => cat._id === form.category_id)?.name : 'Select category'}
                                     <span className="d_MP-dropdown-arrow">▼</span>
                                 </div>
                                 {categoryOpen && (

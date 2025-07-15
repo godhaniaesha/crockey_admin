@@ -12,7 +12,6 @@ const categories = [
   "Woman Jeans",
   "Man T-shirt",
 ];
-const brands = ["Levi's", "Diesel", "Lee", "Hudson", "Denizen", "Spykar"];
 const colors = [
   "bg-gray-300",
   "bg-white",
@@ -26,8 +25,7 @@ const colors = [
 
 const Product = () => {
   const [showFilter, setShowFilter] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([""]);
-  const [selectedBrands, setSelectedBrands] = useState([""]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [price, setPrice] = useState([0, 1000]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [showColorPalette, setShowColorPalette] = useState(false);
@@ -36,6 +34,7 @@ const Product = () => {
   const { products = [], loading, error } = useSelector((state) => state.product) || {};
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
+  const [search, setSearch] = useState("");
 
   const { categories = [] } = useSelector((state) => state.category) || {};
   const safeCategories = Array.isArray(categories?.result)
@@ -84,13 +83,19 @@ const Product = () => {
     setSelectedCategories((prev) =>
       prev.includes(catId) ? prev.filter((c) => c !== catId) : [...prev, catId]
     );
-    setShowFilter(false);
+    // If a subcategory is selected that doesn't belong to any selected category, clear it
+    setSelectedSubcategoryId((prevSubId) => {
+      if (!prevSubId) return prevSubId;
+      const sub = safeSubcategories.find((s) => s._id === prevSubId);
+      if (!sub || !selectedCategories.includes(sub.category_id?._id)) {
+        return null;
+      }
+      return prevSubId;
+    });
   };
-  const handleBrand = (brand) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-    );
-    setShowFilter(false);
+
+  const handleSubcategory = (subId) => {
+    setSelectedSubcategoryId((prev) => (prev === subId ? null : subId));
   };
   const handleColor = (color) => {
     setSelectedColors((prev) =>
@@ -110,21 +115,67 @@ const Product = () => {
 
   // Filter products based on selected category and subcategory
   let displayProducts = products;
+
+  // Calculate min and max price from products
+  const prices = products.map(p => p.price).filter(Boolean);
+  const minPrice = prices.length ? Math.min(...prices) : 0;
+  const maxPrice = prices.length ? Math.max(...prices) : 1000;
+
+  // Filter by price
+  displayProducts = displayProducts.filter(
+    p => p.price >= price[0] && p.price <= price[1]
+  );
+
+  // Filter by color
+  if (selectedColors.length > 0) {
+    displayProducts = displayProducts.filter(
+      p => (p.colors || []).some(c =>
+        selectedColors.includes(typeof c === 'string' ? c : c.name || c.code)
+      )
+    );
+  }
+
   if (selectedSubcategoryId) {
-    displayProducts = products.filter(
+    displayProducts = displayProducts.filter(
       (p) =>
         p.subcategory_id &&
         (p.subcategory_id._id === selectedSubcategoryId ||
           p.subcategory_id === selectedSubcategoryId)
     );
   } else if (selectedCategories.length > 0) {
-    displayProducts = products.filter(
+    displayProducts = displayProducts.filter(
       (p) =>
         p.category_id &&
         selectedCategories.includes(p.category_id._id || p.category_id)
     );
   }
-  // If selectedCategories is empty, displayProducts remains as all products
+
+  // Filter by search
+  if (search.trim() !== "") {
+    const searchLower = search.toLowerCase();
+    displayProducts = displayProducts.filter((p) => {
+      const nameMatch = p.name && p.name.toLowerCase().includes(searchLower);
+      const catMatch = p.category_id && (p.category_id.name || "").toLowerCase().includes(searchLower);
+      const subcatMatch = p.subcategory_id && (p.subcategory_id.name || "").toLowerCase().includes(searchLower);
+      return nameMatch || catMatch || subcatMatch;
+    });
+  }
+
+  useEffect(() => {
+    if (prices.length) {
+      setPrice([minPrice, maxPrice]);
+    }
+    // eslint-disable-next-line
+  }, [products]);
+
+  const allColors = Array.from(
+    new Set(
+      products
+        .flatMap(p => p.colors || [])
+        .map(c => typeof c === 'string' ? c : c.name || c.code || '')
+        .filter(Boolean)
+    )
+  );
 
   return (
     <>
@@ -239,7 +290,7 @@ const Product = () => {
                           type="checkbox"
                           checked={selectedSubcategoryId === sub._id}
                           onChange={() => {
-                            if (isEnabled) setSelectedSubcategoryId(sub._id);
+                            if (isEnabled) handleSubcategory(sub._id);
                           }}
                           className="x_checkbox accent-blue-500 w-4 h-4 mr-2"
                           disabled={!isEnabled}
@@ -264,36 +315,16 @@ const Product = () => {
                   })}
                 </div>
               )}
-              {/* Brand */}
-              <div className="mt-4">
-                <h3 className="font-semibold text-lg mb-2">Brand</h3>
-                {brands.map((brand) => (
-                  <label
-                    key={brand}
-                    className="x_checkbox_label flex items-center mb-1 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedBrands.includes(brand)}
-                      onChange={() => handleBrand(brand)}
-                      className="x_checkbox accent-blue-500 w-4 h-4 mr-2"
-                    />
-                    <span className="text-gray-700">{brand}</span>
-                  </label>
-                ))}
-              </div>
               {/* Colors */}
               <div className="mt-4">
                 <h3 className="font-semibold text-lg mb-2">Colors</h3>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {colors.map((color, idx) => (
+                  {allColors.map((color, idx) => (
                     <span
-                      key={idx}
-                      className={`w-6 h-6 rounded-full border border-gray-300 ${color} inline-block cursor-pointer`}
-                      onClick={() => {
-                        handleColor(color);
-                        setShowColorPalette(false);
-                      }}
+                      key={color + idx}
+                      className={`w-6 h-6 rounded-full border border-gray-300 inline-block cursor-pointer`}
+                      style={{ background: color, margin: '0 2px' }}
+                      onClick={() => handleColor(color)}
                     ></span>
                   ))}
                 </div>
@@ -313,8 +344,8 @@ const Product = () => {
                     {/* Min slider */}
                     <input
                       type="range"
-                      min="100"
-                      max="1000"
+                      min={minPrice}
+                      max={maxPrice}
                       step="10"
                       value={price[0]}
                       onChange={(e) => handlePrice(0, e.target.value)}
@@ -324,8 +355,8 @@ const Product = () => {
                     {/* Max slider */}
                     <input
                       type="range"
-                      min="100"
-                      max="1000"
+                      min={minPrice}
+                      max={maxPrice}
                       step="10"
                       value={price[1]}
                       onChange={(e) => handlePrice(1, e.target.value)}
@@ -351,6 +382,8 @@ const Product = () => {
             type="text"
             placeholder="Search.."
             className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
           <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
             <svg
@@ -390,21 +423,6 @@ const Product = () => {
               );
             })
           }
-          {selectedBrands
-            .filter((b) => b)
-            .map((brand) => (
-              <span key={brand} className="x_filter_tag">
-                {brand}
-                <button
-                  className="x_filter_tag_close"
-                  onClick={() =>
-                    setSelectedBrands(selectedBrands.filter((b) => b !== brand))
-                  }
-                >
-                  &times;
-                </button>
-              </span>
-            ))}
           {/* <span className="x_filter_tag cursor-pointer" onClick={() => setShowColorPalette(v => !v)}>
           Color
         </span>

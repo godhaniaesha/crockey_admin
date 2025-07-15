@@ -47,13 +47,13 @@ exports.getAllProducts = async (req, res) => {
     try {
         const filter = {};
         
-        // Only show active products by default
-        if (req.query.active === undefined) {
+        // Only filter by active if not 'all'
+        if (req.query.active === undefined || req.query.active === 'true') {
             filter.active = true;
-        } else if (req.query.active !== undefined) {
-            filter.active = req.query.active === 'true';
+        } else if (req.query.active === 'true' || req.query.active === 'false') {
+            filter.active = false;
         }
-        
+        // If req.query.active === 'all', do not filter by active
         const products = await Product.find(filter)
             .populate('user_id')
             .populate('category_id')

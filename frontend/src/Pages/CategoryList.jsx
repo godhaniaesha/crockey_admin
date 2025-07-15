@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategories, deleteCategory } from "../redux/slice/category.slice";
+import { fetchCategories, deleteCategory, toggleCategoryStatus } from "../redux/slice/category.slice";
 import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
@@ -59,6 +59,20 @@ function CategoryList(props) {
     navigate(`/edit-category/${id}`);
   };
 
+  const [togglingCategoryId, setTogglingCategoryId] = useState(null);
+
+  const handleStatusToggle = async (id) => {
+    setTogglingCategoryId(id);
+    const result = await dispatch(toggleCategoryStatus(id));
+    setTogglingCategoryId(null);
+
+    if (result.meta.requestStatus === 'rejected') {
+      alert("Error toggling category status: " + result.payload);
+    } else {
+      dispatch(fetchCategories()); // Refresh to get correct status and data
+    }
+  };
+
   // Always use the array for rendering
   const safeCategories = Array.isArray(categories?.result)
     ? categories.result
@@ -77,11 +91,6 @@ function CategoryList(props) {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const handleStatusToggle = (id) => {
-    // TODO: Implement status toggle functionality with API call
-    console.log("Toggle status for category ID:", id);
-  };
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -129,7 +138,12 @@ function CategoryList(props) {
                 setCurrentPage(1);
               }}
             />
-            <button className="z_catList_addBtn">+ Add Category</button>
+            <button 
+              className="z_catList_addBtn"
+              onClick={() => navigate('/category/add')}
+            >
+              + Add Category
+            </button>
           </div>
         </div>
 
@@ -162,11 +176,27 @@ function CategoryList(props) {
                     <label className="z_switch">
                       <input
                         type="checkbox"
-                        checked={item.status || false}
+                        checked={item.active || false}
                         onChange={() => handleStatusToggle(item._id)}
+                        disabled={togglingCategoryId === item._id}
                       />
                       <span className="z_slider"></span>
                     </label>
+                    {/* <span
+                      style={{
+                        marginLeft: '10px',
+                        color: item.active ? 'green' : 'red',
+                        fontWeight: 500,
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {item.active ? 'activated' : 'deactivated'}
+                    </span> */}
+                    {togglingCategoryId === item._id && (
+                      <span style={{ marginLeft: '5px', fontSize: '12px', color: '#666' }}>
+                        Updating...
+                      </span>
+                    )}
                   </td>
                   <td className="z_catList_td">
                     <button

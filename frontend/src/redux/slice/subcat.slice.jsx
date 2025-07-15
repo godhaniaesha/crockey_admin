@@ -80,6 +80,28 @@ export const deleteSubcategory = createAsyncThunk(
   }
 );
 
+export const toggleSubcategoryStatus = createAsyncThunk(
+  'subcategory/toggleSubcategoryStatus',
+  async (id, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.patch(
+        `http://localhost:5000/api/subcategories/${id}/toggle-status`,
+        {},
+        config
+      );
+      return response.data.subcategory || response.data.result || response.data; // Adjust based on backend
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 const subcategorySlice = createSlice({
   name: 'subcategory',
   initialState: {
@@ -144,6 +166,22 @@ const subcategorySlice = createSlice({
         }
       })
       .addCase(deleteSubcategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(toggleSubcategoryStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(toggleSubcategoryStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the subcategory status in the list
+        if (Array.isArray(state.subcategories)) {
+          const idx = state.subcategories.findIndex(sc => sc._id === action.payload._id);
+          if (idx !== -1) state.subcategories[idx] = action.payload;
+        }
+      })
+      .addCase(toggleSubcategoryStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

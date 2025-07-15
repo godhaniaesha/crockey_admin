@@ -1196,4 +1196,19 @@ font-size: 16px;
     height: calc(100vh - 80px);
     border-radius: 0 0 0.75rem 0.75rem;
   }
+.filter-section { margin-bottom: 1rem; }
+.category-list, .subcategory-list { list-style: none; padding: 0; }
+.category-item, .subcategory-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 0.25rem;
+  transition: background 0.2s;
+}
+.category-item.active, .subcategory-item.active {
+  background: #254D70;
+  color: #fff;
+}
+.category-item:hover, .subcategory-item:hover {
+  background: #e6eef5;
 }

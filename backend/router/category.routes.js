@@ -30,5 +30,6 @@ router.put(
 );
 
 router.delete('/:id', deleteCategory);
+router.patch('/:id/toggle-status', require('../controller/category.controller').toggleCategoryStatus);
 
 module.exports = router; 
