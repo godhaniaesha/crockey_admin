@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../redux/slice/product.slice";
+import { createCart, addOrUpdateProduct, fetchCarts } from "../redux/slice/cart.slice";
 import "../style/x_app.css";
-import { FaCartPlus } from "react-icons/fa";
 import { GrCart } from "react-icons/gr";
 
 const categories = [
@@ -29,12 +29,17 @@ const Product = () => {
   const [price, setPrice] = useState([0, 1000]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [showColorPalette, setShowColorPalette] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(null);
   const filterRef = React.useRef(null);
   const dispatch = useDispatch();
   const { products = [], loading, error } = useSelector((state) => state.product) || {};
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
   const [search, setSearch] = useState("");
+  const { carts = [] } = useSelector((state) => state.cart) || {};
+  const authState = useSelector((state) => state.auth);
+  const user = authState?.user;
+  
 
   const { categories = [] } = useSelector((state) => state.category) || {};
   const safeCategories = Array.isArray(categories?.result)
@@ -111,6 +116,61 @@ const Product = () => {
     if (idx === 1 && newPrice[1] < newPrice[0]) newPrice[1] = newPrice[0];
     setPrice(newPrice);
     // Removed setShowFilter(false) so dropdown does not close on price change
+  };
+
+  // Cart functionality from try.js
+  useEffect(() => {
+    // Fetch user's carts when component mounts
+    if (user) {
+      dispatch(fetchCarts());
+    }
+  }, [dispatch, user]);
+
+  const handleAddToCart = async (product) => {
+    // console.log("user in handleAddToCart:", product);
+    if (!user) {
+      alert('User not logged in');
+      return;
+    }
+
+    try {
+      setAddingToCart(product._id);
+      const userCart = carts.find(cart => cart.user_id === user._id);
+
+      if (!userCart) {
+        // No cart exists - create new cart with the product
+        const cartData = {
+          user_id: user._id,
+          products: [
+            {
+              product_id: product._id,
+              quantity: 1
+            }
+          ]
+        };
+        await dispatch(createCart(cartData)).unwrap();
+      } else {
+        // Cart exists - check if product is already in cart
+        const existingProduct = userCart.products?.find(
+          p => p.product_id === product._id
+        );
+
+        if (existingProduct) {
+          const updateData = {
+            cart_id: userCart._id,
+            product_id: product._id,
+            quantity: existingProduct.quantity + 1
+          };
+          await dispatch(addOrUpdateProduct(updateData)).unwrap();
+        }
+      }
+
+      dispatch(fetchCarts());
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setAddingToCart(null);
+    }
   };
 
   // Filter products based on selected category and subcategory
@@ -505,8 +565,15 @@ const Product = () => {
                         />
                       </svg>
                     </button>
-                    <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
-                      <GrCart className="w-4 h-4 text-gray-600" />
+                    <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors"
+                      onClick={() => handleAddToCart(product)}
+                      disabled={addingToCart === product._id}
+                    >
+                      {addingToCart === product._id ? (
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                      ) : (
+                        <GrCart className="w-4 h-4 text-gray-600" />
+                      )}
                     </button>
                   </div>
                 </div>

@@ -71,7 +71,7 @@ router.get('/check-auth', authenticateToken, AuthController.authnticateCheck);
 router.get('/users', requireAdmin, AuthController.getAllUsers);
 
 // Get user by ID (admin only)
-router.get('/users/:id', requireAdmin, AuthController.getUserById);
+router.get('/users/:id', authenticateToken, AuthController.getUserById);
 
 // Update user (admin only)
 router.put('/users/:id', requireAdmin, upload.single('profileImage'), AuthController.updateUser);

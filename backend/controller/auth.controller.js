@@ -21,7 +21,7 @@ const generateTokens = async (id) => {
                 role: user.role
             },
             process.env.ACCESS_TOKEN_KEY,
-            { expiresIn: '15m' });
+            { expiresIn: '15h' });
 
         const refreshToken = await jwt.sign(
             {
