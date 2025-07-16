@@ -38,7 +38,7 @@ const PasswordField = ({ name, placeholder, className }) => {
 
 const Login = () => {
 
-  const BaseUrl = process.env.REACT_APP_BASEURL;
+  const BaseUrl = process.env.REACT_APP_BASEURL || "http://localhost:5000";
 console.log("BaseUrl????????",BaseUrl);
 
   const [formType, setFormType] = useState("login"); // 'login', 'register', 'forgot', 'otp', 'reset'
