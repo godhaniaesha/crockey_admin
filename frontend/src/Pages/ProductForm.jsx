@@ -36,8 +36,8 @@ const ProductForm = () => {
   const safeCategories = Array.isArray(categories?.result)
     ? categories.result
     : Array.isArray(categories)
-    ? categories
-    : [];
+      ? categories
+      : [];
   const categoryOptions = ["Crockery", "Cutlery", "Glassware", "Other"];
   const colorOptions = [
     "#254D70",
@@ -85,8 +85,8 @@ const ProductForm = () => {
   const safeSubcategories = Array.isArray(subcategories?.result)
     ? subcategories.result
     : Array.isArray(subcategories)
-    ? subcategories
-    : [];
+      ? subcategories
+      : [];
 
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -293,7 +293,7 @@ const ProductForm = () => {
   return (
     <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
       <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">
-        Add New Product
+        {id ? "Update New Product" : "Add New Product"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="mb-6">
@@ -301,11 +301,10 @@ const ProductForm = () => {
             Product Images
           </h3>
           <div
-            className={`d_MP-dropzone flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition ${
-              dragActive
+            className={`d_MP-dropzone flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition ${dragActive
                 ? "border-[#254D70] bg-[#e6eef5]"
                 : "border-[#b6c6d7] bg-[#f8fafc]"
-            }`}
+              }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -409,7 +408,7 @@ const ProductForm = () => {
                 <div className="d_MP-dropdown-selected">
                   {form.category
                     ? safeCategories.find((cat) => cat._id === form.category)
-                        ?.name
+                      ?.name
                     : "Select category"}
                   <span className="d_MP-dropdown-arrow">▼</span>
                 </div>
@@ -418,9 +417,8 @@ const ProductForm = () => {
                     {safeCategories.map((option) => (
                       <li
                         key={option._id}
-                        className={`d_MP-dropdown-option${
-                          form.category === option._id ? " selected" : ""
-                        }`}
+                        className={`d_MP-dropdown-option${form.category === option._id ? " selected" : ""
+                          }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           setForm({ ...form, category: option._id });
@@ -442,9 +440,8 @@ const ProductForm = () => {
                 Subcategory
               </label>
               <div
-                className={`d_MP-custom-dropdown${
-                  subcategoryOpen ? " open" : ""
-                }`}
+                className={`d_MP-custom-dropdown${subcategoryOpen ? " open" : ""
+                  }`}
                 tabIndex={0}
                 ref={subcategoryRef}
                 onClick={() => setSubcategoryOpen((open) => !open)}
@@ -456,8 +453,8 @@ const ProductForm = () => {
                 <div className="d_MP-dropdown-selected">
                   {form.subcategory
                     ? safeSubcategories.find(
-                        (sub) => sub._id === form.subcategory
-                      )?.name
+                      (sub) => sub._id === form.subcategory
+                    )?.name
                     : "Select subcategory"}
                   <span className="d_MP-dropdown-arrow">▼</span>
                 </div>
@@ -466,9 +463,8 @@ const ProductForm = () => {
                     {safeSubcategories.map((option) => (
                       <li
                         key={option._id}
-                        className={`d_MP-dropdown-option${
-                          form.subcategory === option._id ? " selected" : ""
-                        }`}
+                        className={`d_MP-dropdown-option${form.subcategory === option._id ? " selected" : ""
+                          }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           setForm({ ...form, subcategory: option._id });
@@ -619,9 +615,8 @@ const ProductForm = () => {
                   <button
                     key={color}
                     type="button"
-                    className={`d_MP-color-swatch${
-                      selectedColors.includes(color) ? " selected" : ""
-                    }`}
+                    className={`d_MP-color-swatch${selectedColors.includes(color) ? " selected" : ""
+                      }`}
                     style={{ backgroundColor: color }}
                     onClick={() => handleColorToggle(color)}
                     aria-label={color}
@@ -689,9 +684,8 @@ const ProductForm = () => {
                   <button
                     key={size}
                     type="button"
-                    className={`d_MP-size-chip${
-                      selectedSizes.includes(size) ? " selected" : ""
-                    }`}
+                    className={`d_MP-size-chip${selectedSizes.includes(size) ? " selected" : ""
+                      }`}
                     onClick={() => handleSizeToggle(size)}
                   >
                     {size}

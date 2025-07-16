@@ -1165,6 +1165,9 @@
     padding-left: 0;
     padding-right: 0;
   }
+  .d_DS-target-stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {

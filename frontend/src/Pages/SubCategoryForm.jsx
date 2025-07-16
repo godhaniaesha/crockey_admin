@@ -131,7 +131,7 @@ const SubCategoryForm = () => {
 
     return (
         <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
-            <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">Add New SubCategory</h2>
+            <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">{id? "Update New SubCategory": "Add New SubCategory"}</h2>
             <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="mb-6">
                     <h3 className="d_MP-section-title text-xl font-bold mb-4">SubCategory Images</h3>
