@@ -34,7 +34,7 @@ export const placeOrder = createAsyncThunk(
   'order/placeOrder',
   async (orderData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/orders/', orderData, getConfig());
+      const response = await axios.post('http://localhost:5000/api/orders/', orderData, getConfig());      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

@@ -7,7 +7,8 @@ const {
     updateCart,
     deleteCart,
     addOrUpdateProduct,
-    removeProduct
+    removeProduct,
+    getUserCart
 } = require('../controller/cart.controller');
 const { authenticateToken } = require('../middleware/auth.middleware');
 
@@ -19,5 +20,6 @@ router.put('/:id', authenticateToken, updateCart);
 router.delete('/:id', authenticateToken, deleteCart);
 router.post('/add-or-update', authenticateToken, addOrUpdateProduct);
 router.post('/remove', authenticateToken, removeProduct);
+router.get('/get-user-cart/:id', authenticateToken, getUserCart);
 
 module.exports = router; 

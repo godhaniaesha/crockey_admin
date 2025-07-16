@@ -14,7 +14,23 @@ export const fetchCarts = createAsyncThunk(
     }
   }
 );
-
+export const fetchUserCarts = createAsyncThunk(
+  'cart/fetchUserCarts',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+      
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const response = await axios.get(`http://localhost:5000/api/carts/get-user-cart/${userId}`, config);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
 export const createCart = createAsyncThunk(
   'cart/createCart',
   async (cartData, { rejectWithValue }) => {
@@ -104,6 +120,20 @@ const cartSlice = createSlice({
         state.carts = action.payload;
       })
       .addCase(fetchCarts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+       .addCase(fetchUserCarts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserCarts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.carts = Array.isArray(action.payload) 
+    ? action.payload 
+    : Object.values(action.payload || {});
+      })
+      .addCase(fetchUserCarts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

@@ -1,46 +1,135 @@
-import { useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { getUserById } from "../redux/slice/auth.slice";
+import { placeOrder } from "../redux/slice/order.slice";
 
 const CheckOut = () => {
+    const location = useLocation();
+    const dispatch = useDispatch();
 
-    const [form, setForm] = useState({ firstName: '', lastName: '', mobileNo: '', email: '', country: '', address: '', city: '', state: '', pinCode: '' });
+    const { user } = useSelector((state) => state.auth);
+
+    const [form, setForm] = useState({
+        firstName: '',
+        lastName: '',
+        mobileNo: '',
+        email: '',
+        country: '',
+        address: '',
+        city: '',
+        state: '',
+        pinCode: ''
+    });
+
+    const checkOutData = location.state;
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('No authentication token found');
+                    return;
+                }
+                const decoded = jwtDecode(token);
+
+                await dispatch(getUserById({ userId: decoded._id })).unwrap();
+
+            } catch (error) {
+                console.error('Data fetching error:', error);
+            }
+        };
+        fetchUserData();
+    }, [dispatch]);
+
+    // Update form with user data when user data is available
+    useEffect(() => {
+        if (user) {
+            console.log("user", user);
+
+            setForm(prevForm => ({
+                ...prevForm,
+                email: user.email || '',
+                mobileNo: user.phone_number || '',
+                firstName: user.username ? user.username.split(' ')[0] : '',
+                lastName: user.username ? user.username.split(' ').slice(1).join(' ') : '',
+            }));
+        }
+    }, [user]);
 
     const [selectedShipping, setSelectedShipping] = useState('option1');
     const [selectedPayment, setSelectedPayment] = useState('paypal');
 
-    // Sample order data
-    const orderItems = [
-        { id: 1, name: 'Pink Slim Shirt', quantity: 1, price: 25.10 },
-        { id: 2, name: 'SLim Fit Jeans', quantity: 1, price: 555.00 }
-    ];
+    // Extract order items from checkout data
+    const getOrderItems = () => {
+        if (!checkOutData || !checkOutData.cartItems) return [];
 
-    const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const items = [];
+        checkOutData.cartItems.forEach(cartItem => {
+            cartItem.products.forEach(product => {
+                items.push({
+                    id: product._id,
+                    name: product.product_id.name || 'Product Name',
+                    quantity: product.quantity,
+                    price: product.product_id.price || 0,
+                    image: product.product_id.image || ''
+                });
+            });
+        });
+        return items;
+    };
+
+    const orderItems = getOrderItems();
+
+    // Calculate totals from checkout data
+    const subtotal = checkOutData ? checkOutData.subtotal : 0;
+    const discount = checkOutData ? checkOutData.discount : 0;
     const shippingCost = selectedShipping === 'option1' ? 240.00 : 260.00;
-    const total = subtotal + shippingCost;
+    const total = subtotal - discount + shippingCost;
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission logic here
-        alert('Order Placed Successfully!');
+
+        if (!user?._id) {
+            alert("User not logged in!");
+            return;
+        }
+
+        const shippingAddress = `${form.address}, ${form.city}, ${form.state}, ${form.pinCode}, ${form.country}`;
+
+        const payload = {
+            user_id: user._id,
+            paymentType: selectedPayment,
+            shippingAddress
+        };
+
+        try {
+            await dispatch(placeOrder(payload)).unwrap();
+            alert('Order Placed Successfully!');
+        } catch (error) {
+            console.error("Order failed:", error);
+            alert('Order placement failed.');
+        }
     };
 
-    const handleShippingChange = (option) => {
-        setSelectedShipping(prev => ({
-            ...prev,
-            [option]: !prev[option]
-        }));
-    };
+
+    // if (loading) {
+    //     return <div className="flex justify-center items-center h-64">Loading...</div>;
+    // }
+
     return (
         <>
             <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
                 <h2 className="d_MP-title text-3xl font-extrabold mb-8 tracking-wide">Billing Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className=" col-span-2 ">
+                    <div className="col-span-2">
                         <form onSubmit={handleSubmit} className="space-y-8">
-
                             <div className="mb-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
@@ -92,13 +181,13 @@ const CheckOut = () => {
                                             onChange={handleChange}
                                             className="d_MP-input w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#254D70]"
                                             required
-                                            placeholder="Enter Coupon Name"
+                                            placeholder="Enter Email Address"
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-6">
-                                <div className="grid grid-cols-1  gap-6">
+                                <div className="grid grid-cols-1 gap-6">
                                     <div>
                                         <label className="d_MP-label block mb-2 font-semibold">Address</label>
                                         <input
@@ -169,10 +258,6 @@ const CheckOut = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className='w-full flex justify-center'>
-                                <button type="submit" className="d_MP-btn w-auto bg-[#254D70] text-white py-3 rounded-lg text-lg font-bold shadow hover:bg-[#1e3a56] transition">Add Coupon</button>
-
-                            </div>
                         </form>
                     </div>
                     <div className="border border-[#a6c2db] rounded-md p-6 h-fit">
@@ -184,12 +269,16 @@ const CheckOut = () => {
 
                         {/* Order Items */}
                         <div className="space-y-3 mb-4">
-                            {orderItems.map((item) => (
-                                <div key={item.id} className="flex justify-between items-center text-gray-600">
-                                    <span className="text-sm">{item.name} × {item.quantity}</span>
-                                    <span className="font-medium">${item.price.toFixed(2)}</span>
-                                </div>
-                            ))}
+                            {orderItems.length > 0 ? (
+                                orderItems.map((item) => (
+                                    <div key={item.id} className="flex justify-between items-center text-gray-600">
+                                        <span className="text-sm">{item.name} × {item.quantity}</span>
+                                        <span className="font-medium">${item.price.toFixed(2)}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center text-gray-500">No items in cart</div>
+                            )}
                         </div>
 
                         {/* Subtotal */}
@@ -198,31 +287,52 @@ const CheckOut = () => {
                             <span className="font-semibold">${subtotal.toFixed(2)}</span>
                         </div>
 
+                        {/* Discount */}
+                        {discount > 0 && (
+                            <div className="flex justify-between items-center py-3 border-t border-gray-200">
+                                <span className="font-semibold text-gray-700">Discount</span>
+                                <span className="font-semibold text-green-600">-${discount.toFixed(2)}</span>
+                            </div>
+                        )}
+
                         {/* Shipping Options */}
                         <div className="py-3 border-t border-gray-200">
                             <div className="flex justify-between items-start mb-2">
                                 <span className="font-semibold text-gray-700">Shipping</span>
                                 <div className="text-right">
-                                    {/* Styled Radio as Checkbox */}
                                     <div className="space-y-2">
-                                        {['option1', 'option2'].map((option) => (
-                                            <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="shipping"
-                                                    value={option}
-                                                    checked={selectedShipping === option}
-                                                    onChange={(e) => setSelectedShipping(e.target.value)}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-5 h-5 rounded border border-gray-400 bg-white peer-checked:border-[#254D70] flex items-center justify-center transition-colors duration-200">
-                                                    {selectedShipping === option && (
-                                                        <FaCheck className="w-3 h-3 text-[#254D70]" />
-                                                    )}
-                                                </div>
-                                                <span className="text-sm text-gray-700 capitalize">{option.replace('option', 'Option ')}</span>
-                                            </label>
-                                        ))}
+                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="shipping"
+                                                value="option1"
+                                                checked={selectedShipping === 'option1'}
+                                                onChange={(e) => setSelectedShipping(e.target.value)}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-5 h-5 rounded border border-gray-400 bg-white peer-checked:border-[#254D70] flex items-center justify-center transition-colors duration-200">
+                                                {selectedShipping === 'option1' && (
+                                                    <FaCheck className="w-3 h-3 text-[#254D70]" />
+                                                )}
+                                            </div>
+                                            <span className="text-sm text-gray-700">Standard ($240.00)</span>
+                                        </label>
+                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="shipping"
+                                                value="option2"
+                                                checked={selectedShipping === 'option2'}
+                                                onChange={(e) => setSelectedShipping(e.target.value)}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-5 h-5 rounded border border-gray-400 bg-white peer-checked:border-[#254D70] flex items-center justify-center transition-colors duration-200">
+                                                {selectedShipping === 'option2' && (
+                                                    <FaCheck className="w-3 h-3 text-[#254D70]" />
+                                                )}
+                                            </div>
+                                            <span className="text-sm text-gray-700">Express ($260.00)</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -300,9 +410,15 @@ const CheckOut = () => {
                                     </span>
                                     <div className="flex items-center space-x-2">
                                         <div className="flex space-x-1">
-                                            <div className="border p-1 "><img src={require('../Image/download.png')} alt="" className="w-10 h-8" /></div>
-                                            <div className="border p-1 "><img src={require('../Image/visa.png')} alt="" className="w-10 h-8" /></div>
-                                            <div className="border p-1 "><img src={require('../Image/master.png')} alt="" className="w-10 h-8" /></div>
+                                            <div className="border p-1">
+                                                <img src={require('../Image/download.png')} alt="" className="w-10 h-8" />
+                                            </div>
+                                            <div className="border p-1">
+                                                <img src={require('../Image/visa.png')} alt="" className="w-10 h-8" />
+                                            </div>
+                                            <div className="border p-1">
+                                                <img src={require('../Image/master.png')} alt="" className="w-10 h-8" />
+                                            </div>
                                         </div>
                                     </div>
                                 </label>
@@ -312,7 +428,8 @@ const CheckOut = () => {
                         {/* Place Order Button */}
                         <button
                             onClick={handleSubmit}
-                            className="w-full d_MP-btn "
+                            className="w-full d_MP-btn"
+                            disabled={orderItems.length === 0}
                         >
                             Place Order
                         </button>
@@ -321,6 +438,6 @@ const CheckOut = () => {
             </div>
         </>
     );
-}
+};
 
 export default CheckOut;

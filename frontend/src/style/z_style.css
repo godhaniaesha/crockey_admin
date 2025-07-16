@@ -3607,6 +3607,16 @@
   transition: background 0.18s, box-shadow 0.18s;
   box-shadow: 0 1px 4px rgba(37, 77, 112, 0.08);
   outline: none;
+   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  
+  /* Prevent button from being highlighted on click */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Smooth transitions */
+  transition: all 0.1s ease;
 }
 
 .z_qty_btn:disabled {

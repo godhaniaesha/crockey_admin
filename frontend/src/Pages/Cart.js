@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../style/z_style.css';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Pagination, Autoplay } from 'swiper/modules';
-import { deleteCart, fetchCarts, updateCart } from '../redux/slice/cart.slice';
+import { deleteCart, fetchUserCarts, updateCart } from '../redux/slice/cart.slice';
 import 'swiper/css/pagination';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode";
 
 const coupons = [
   { code: 'SAVE10', desc: 'Get 10% off', btn: 'Apply Coupon' },
@@ -15,10 +17,10 @@ const coupons = [
 ];
 
 function Cart() {
-  const BaseUrl = process.env.REACT_APP_BASEURL;
   const dispatch = useDispatch();
-  const { carts, loading, error } = useSelector((state) => state.cart);
+  const navigate = useNavigate();
 
+  const { carts, loading, error } = useSelector((state) => state.cart);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   useEffect(() => {
@@ -29,7 +31,10 @@ function Cart() {
           console.error('No authentication token found');
           return;
         }
-        await dispatch(fetchCarts()).unwrap();
+        const decoded = jwtDecode(token);
+
+        console.log("decoded", decoded._id);
+        await dispatch(fetchUserCarts(decoded._id)).unwrap();
       } catch (error) {
         console.error('Data fetching error:', error);
       }
@@ -62,23 +67,16 @@ function Cart() {
   };
 
   const getTotal = (item) => {
-    if (
-      !item.products ||
-      !item.products[0] ||
-      !item.products[0].product_id
-    ) return "0.00";
-    const price = item.products[0].product_id.price || 0;
-    const quantity = item.products[0].quantity || 0;
+    const price = item.products[0]?.product_id.price;
+    const quantity = item.products[0]?.quantity;
     return (price * quantity).toFixed(2);
   };
 
-  const cartTotal = carts.reduce((sum, item) => {
-    if (
-      !item.products ||
-      !item.products[0] ||
-      !item.products[0].product_id
-    ) return sum;
-    return sum + (item.products[0].product_id.price * item.products[0].quantity);
+  // Convert carts object to array if needed
+  const cartItems = Array.isArray(carts) ? carts : Object.values(carts || {});
+
+  const cartTotal = cartItems.reduce((sum, item) => {
+    return sum + (item.products[0]?.product_id.price * item.products[0]?.quantity);
   }, 0);
 
   // Calculate discount based on applied coupon
@@ -99,7 +97,15 @@ function Cart() {
   };
 
   const handleNavigate = () => {
+    const checkoutData = {
+      cartItems: cartItems,
+      subtotal: cartTotal,
+      discount: discount,
+      appliedCoupon: appliedCoupon,
+      total: parseFloat(totalAfterDiscount)
+    };
 
+    navigate('/checkout', { state: checkoutData });
   }
 
   if (loading) return <div>Loading...</div>;
@@ -126,48 +132,29 @@ function Cart() {
                     </tr>
                   </thead>
                   <tbody>
-                    {carts.map((item) => (
+                    {cartItems.map((item) => (
                       <tr className="z_cart_tr" key={item._id}>
                         <td className="z_cart_td">
                           <img
-                            src={
-                              item.products &&
-                              item.products[0] &&
-                              item.products[0].product_id &&
-                              item.products[0].product_id.images &&
-                              item.products[0].product_id.images[0]
-                                ? `http://localhost:5000/uploads/${item.products[0].product_id.images[0]}`
-                                : "default-image-path.jpg"
-                            }
-                            alt={
-                              item.products &&
-                              item.products[0] &&
-                              item.products[0].product_id &&
-                              item.products[0].product_id.name
-                                ? item.products[0].product_id.name
-                                : "Product"
-                            }
+                            src={`http://localhost:5000/uploads/${item.products[0]?.product_id.images[0]}`}
+                            alt={item.products[0]?.product_id.name}
                             className="z_cart_img"
                           />
                         </td>
-                        <td className="z_cart_td">{item.products?.[0]?.product_id?.name || "N/A"}</td>
-                        <td className="z_cart_td">${item.products?.[0]?.product_id?.price?.toFixed(2) || "0.00"}</td>
+                        <td className="z_cart_td">{item.products[0]?.product_id.name}</td>
+                        <td className="z_cart_td">${item.products[0]?.product_id.price.toFixed(2)}</td>
                         <td className="z_cart_td">
                           <div className="z_qty_wrapper">
                             <button
                               type="button"
                               className="z_qty_btn"
-                              onClick={() => {
-                                const quantity = item.products?.[0]?.quantity ?? 1;
-                                const productId = item.products?.[0]?.product_id?._id;
-                                if (productId) handleQuantityChange(item._id, quantity - 1, productId);
-                              }}
-                              disabled={!(item.products?.[0]?.quantity > 1)}
+                              onClick={() => handleQuantityChange(item._id, item.products[0].quantity - 1, item.products[0].product_id._id)}
+                              disabled={item.products[0]?.quantity <= 1}
                               aria-label="Decrease quantity"
                             >
                               –
                             </button>
-                            <span className="z_qty_value">{item.products?.[0]?.quantity || 0}</span>
+                            <span className="z_qty_value">{item.products[0]?.quantity}</span>
                             <button
                               type="button"
                               className="z_qty_btn"

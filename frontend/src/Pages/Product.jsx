@@ -40,7 +40,6 @@ const Product = () => {
   const [search, setSearch] = useState("");
   const { carts = [] } = useSelector((state) => state.cart) || {};
   const authState = useSelector((state) => state.auth);
-  console.log("authState:", authState);
   const user = authState?.user;
   const navigate = useNavigate();
   
@@ -131,7 +130,7 @@ const Product = () => {
   }, [dispatch, user]);
 
   const handleAddToCart = async (product) => {
-    console.log("user in handleAddToCart:", user);
+    // console.log("user in handleAddToCart:", product);
     if (!user) {
       alert('User not logged in');
       return;

@@ -8,7 +8,7 @@ const orderSchema = mongoose.Schema({
         priceAtOrder: { type: Number, required: true }
     }],
     totalAmount: { type: Number, required: true },
-    paymentType: { type: String, enum: ['cod', 'online'], required: true },
+    paymentType: { type: String, enum: ['cod', 'online','paypal'], required: true },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
     orderStatus: { type: String, enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
     shippingAddress: { type: String, required: true },
