@@ -22,7 +22,8 @@ const {
     authenticateToken, 
     requireAdmin, 
     requireOwnership,
-    requireSeller
+    requireSeller,
+    requireAdminOrSeller
 } = require('../middleware/auth.middleware');
 
 // Place order (authenticated user)
@@ -38,7 +39,7 @@ router.get('/orders/user/:userId', authenticateToken, getOrdersByUserId);
 router.get('/my-orders', authenticateToken, getUserOrders);
 
 // Get seller's product orders (seller only)
-router.get('/seller-orders', authenticateToken, requireSeller, getSellerOrders);
+router.get('/seller-orders', authenticateToken, requireAdminOrSeller,getSellerOrders);
 
 // Get seller's payouts (seller only)
 router.get('/seller-payouts', authenticateToken, requireSeller, getSellerPayouts);

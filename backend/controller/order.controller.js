@@ -302,11 +302,13 @@ exports.getSellerOrders = async (req, res) => {
 
         // Filter and format the response to show only seller's products in each order
         const formattedOrders = orders.map(order => {
-            const sellerProductsInOrder = order.products.filter(product =>
-                sellerProductIds.includes(product.product_id._id)
-            );
-
-            const totalSellerAmount = sellerProductsInOrder.reduce((sum, product) =>
+            const sellerProductIdStrings = sellerProductIds.map(id => id.toString());
+            const sellerProductsInOrder = order.products.filter(product => {
+                const prodId = product.product_id._id ? product.product_id._id.toString() : product.product_id.toString();
+                return sellerProductIdStrings.includes(prodId);
+            });
+            
+            const totalSellerAmount = sellerProductsInOrder.reduce((sum, product) => 
                 sum + (product.priceAtOrder * product.quantity), 0
             );
 
@@ -349,8 +351,14 @@ exports.getAllOrders = async (req, res) => {
         const filter = {};
         if (req.query.user) filter.user_id = req.query.user;
         const orders = await Order.find(filter)
-            .populate('user_id')
-            .populate('products.product_id');
+        .populate('user_id')
+        .populate({
+            path: 'products.product_id',
+            populate: {
+                path: 'user_id', // This is the seller!
+                model: 'Register'
+            }
+        });
         res.status(200).json(addDiscountPriceToOrders(orders));
     } catch (error) {
         res.status(500).json({ error: error.message });

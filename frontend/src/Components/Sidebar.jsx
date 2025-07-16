@@ -4,6 +4,7 @@ import { SlHandbag } from "react-icons/sl";
 import { MdOutlineCategory } from "react-icons/md";
 import { HomeIcon, ViewGridIcon, TagIcon, ShoppingCartIcon, UsersIcon, GiftIcon, StarIcon, ShieldCheckIcon, XIcon, ChevronRightIcon } from '@heroicons/react/outline';
 import '../style/d_style.css';
+import { jwtDecode } from 'jwt-decode';
 
 const menu = [
     { name: 'Dashboard', icon: <HomeIcon className='w-6 h-6 d_icon' />, link: '' },
@@ -50,7 +51,8 @@ const menu = [
         link: '/orders',
         submenu: [
             { name: 'Order List', link: '/orders/list' },
-            { name: 'Order History', link: '/orders/history' }
+            { name: 'Orders I Placed', link: '/orders/placed' },
+            { name: 'Orders for My Products', link: '/orders/for-my-products' }
         ]
     },
     {
@@ -70,6 +72,19 @@ const Sidebar = ({ open, setopen }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
     const [openSubmenu, setOpenSubmenu] = useState(null);
+
+    // Get user role from token
+    let userRole = null;
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            userRole = decoded.role;
+        } catch (e) {
+            userRole = null;
+        }
+    }
+    const isAdmin = userRole === 'admin';
 
     useEffect(() => {
         const handleResize = () => {
@@ -122,10 +137,24 @@ const Sidebar = ({ open, setopen }) => {
             </div>
             <nav className="mt-6 flex-1 overflow-y-auto min-h-0">
                 <ul className="space-y-2">
-                    {menu.map((item, idx) => (
-                        <li key={item.name} className="relative group">
-                            {item.submenu ? (
-                                <>
+                    {menu.map((item, idx) => {
+                        // Special logic for Orders menu
+                        if (item.name === 'Orders') {
+                            let ordersSubmenu = [];
+                            if (isAdmin) {
+                                ordersSubmenu = [
+                                    { name: 'Order List', link: '/orders/list' },
+                                    { name: 'Orders I Placed', link: '/orders/placed' },
+                                    { name: 'Orders for My Products', link: '/orders/for-my-products' }
+                                ];
+                            } else {
+                                ordersSubmenu = [
+                                    { name: 'Orders I Placed', link: '/orders/placed' },
+                                    { name: 'Orders for My Products', link: '/orders/for-my-products' }
+                                ];
+                            }
+                            return (
+                                <li key={item.name} className="relative group">
                                     <button
                                         type="button"
                                         className={`flex items-center w-full px-6 py-3 rounded-lg transition-all d_menu_item font-medium hover:bg-d_hover hover:shadow-lg ${location.pathname.startsWith(item.link) ? 'd_active' : 'text-dark'} ${effectiveCollapsed ? 'justify-center px-2' : ''}`}
@@ -155,7 +184,7 @@ const Sidebar = ({ open, setopen }) => {
                                                 transitionProperty: 'max-height, opacity',
                                             }}
                                         >
-                                            {item.submenu.map((sub) => (
+                                            {ordersSubmenu.map((sub) => (
                                                 <li key={sub.name}>
                                                     <Link
                                                         to={sub.link}
@@ -169,33 +198,146 @@ const Sidebar = ({ open, setopen }) => {
                                             ))}
                                         </ul>
                                     )}
-                                </>
-                            ) : (
-                                <Link
-                                    to={item.link}
-                                    className={`flex items-center px-6 py-3 rounded-lg transition-all d_menu_item font-medium hover:bg-d_hover hover:shadow-lg ${location.pathname === item.link ? 'd_active' : 'text-dark'} ${effectiveCollapsed ? 'justify-center px-2' : ''}`}
-                                    onClick={() => setopen(false)}
-                                    tabIndex={0}
-                                    aria-label={item.name}
-                                >
-                                    <span className={`${!effectiveCollapsed ? 'mr-4' : ''} transition-all duration-300`}>{item.icon}</span>
-                                    {!effectiveCollapsed && <span>{item.name}</span>}
-                                </Link>
-                            )}
-                            {/* Tooltip only on desktop and when collapsed */}
-                            {isDesktop && effectiveCollapsed && (
-                                <span
-                                    className="fixed z-50 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap"
-                                    style={{
-                                        left: '80px', // 20 * 4px (w-20)
-                                        top: `calc(${idx * 48 + 80}px)`, // 48px per item, 80px for header, adjust as needed
-                                    }}
-                                >
-                                    {item.name}
-                                </span>
-                            )}
-                        </li>
-                    ))}
+                                    {/* Tooltip only on desktop and when collapsed */}
+                                    {isDesktop && effectiveCollapsed && (
+                                        <span
+                                            className="fixed z-50 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap"
+                                            style={{
+                                                left: '80px',
+                                                top: `calc(${idx * 48 + 80}px)`,
+                                            }}
+                                        >
+                                            {item.name}
+                                        </span>
+                                    )}
+                                </li>
+                            );
+                        }
+                        // Hide Coupons menu for non-admins
+                        if (item.name === 'Coupons' && !isAdmin) {
+                            return null;
+                        }
+                        return (
+                            <li key={item.name} className="relative group">
+                                {item.submenu && item.name === 'Product' ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className={`flex items-center w-full px-6 py-3 rounded-lg transition-all d_menu_item font-medium hover:bg-d_hover hover:shadow-lg ${location.pathname.startsWith(item.link) ? 'd_active' : 'text-dark'} ${effectiveCollapsed ? 'justify-center px-2' : ''}`}
+                                            onClick={() => {
+                                                if (effectiveCollapsed) {
+                                                    setCollapsed(false);
+                                                    setOpenSubmenu(idx);
+                                                } else {
+                                                    setOpenSubmenu(openSubmenu === idx ? null : idx);
+                                                }
+                                            }}
+                                            aria-expanded={openSubmenu === idx}
+                                        >
+                                            <span className={`${!effectiveCollapsed ? 'mr-4' : ''} transition-all duration-300`}>{item.icon}</span>
+                                            {!effectiveCollapsed && <span>{item.name}</span>}
+                                            {!effectiveCollapsed && (
+                                                <svg className={`ml-auto w-4 h-4 transition-transform duration-200 ${openSubmenu === idx ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        {/* Submenu, but hide 'Product Detail' */}
+                                        {openSubmenu === idx && !effectiveCollapsed && (
+                                            <ul
+                                                className="ml-4 mt-1 bg-white shadow-xl border-l-4 border-[#254D70] py-2 rounded-lg transition-all duration-500 ease-in-out overflow-hidden max-h-96 opacity-100 min-w-[180px]"
+                                                style={{
+                                                    transitionProperty: 'max-height, opacity',
+                                                }}
+                                            >
+                                                {item.submenu.filter(sub => sub.name !== 'Product Detail').map((sub) => (
+                                                    <li key={sub.name}>
+                                                        <Link
+                                                            to={sub.link}
+                                                            className={`flex items-center gap-2 px-6 py-2 hover:bg-[#254D70]/20 hover:text-[#254D70] transition-colors duration-150 ${location.pathname === sub.link ? 'bg-[#254D70]/10 text-[#254D70] font-semibold' : 'text-gray-700'}`}
+                                                            onClick={() => setopen(false)}
+                                                        >
+                                                            <ChevronRightIcon className="w-4 h-4 text-[#254D70]" />
+                                                            {sub.name}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </>
+                                ) : item.submenu ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className={`flex items-center w-full px-6 py-3 rounded-lg transition-all d_menu_item font-medium hover:bg-d_hover hover:shadow-lg ${location.pathname.startsWith(item.link) ? 'd_active' : 'text-dark'} ${effectiveCollapsed ? 'justify-center px-2' : ''}`}
+                                            onClick={() => {
+                                                if (effectiveCollapsed) {
+                                                    setCollapsed(false);
+                                                    setOpenSubmenu(idx);
+                                                } else {
+                                                    setOpenSubmenu(openSubmenu === idx ? null : idx);
+                                                }
+                                            }}
+                                            aria-expanded={openSubmenu === idx}
+                                        >
+                                            <span className={`${!effectiveCollapsed ? 'mr-4' : ''} transition-all duration-300`}>{item.icon}</span>
+                                            {!effectiveCollapsed && <span>{item.name}</span>}
+                                            {!effectiveCollapsed && (
+                                                <svg className={`ml-auto w-4 h-4 transition-transform duration-200 ${openSubmenu === idx ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        {/* Submenu */}
+                                        {openSubmenu === idx && !effectiveCollapsed && (
+                                            <ul
+                                                className="ml-4 mt-1 bg-white shadow-xl border-l-4 border-[#254D70] py-2 rounded-lg transition-all duration-500 ease-in-out overflow-hidden max-h-96 opacity-100 min-w-[180px]"
+                                                style={{
+                                                    transitionProperty: 'max-height, opacity',
+                                                }}
+                                            >
+                                                {item.submenu.map((sub) => (
+                                                    <li key={sub.name}>
+                                                        <Link
+                                                            to={sub.link}
+                                                            className={`flex items-center gap-2 px-6 py-2 hover:bg-[#254D70]/20 hover:text-[#254D70] transition-colors duration-150 ${location.pathname === sub.link ? 'bg-[#254D70]/10 text-[#254D70] font-semibold' : 'text-gray-700'}`}
+                                                            onClick={() => setopen(false)}
+                                                        >
+                                                            <ChevronRightIcon className="w-4 h-4 text-[#254D70]" />
+                                                            {sub.name}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Link
+                                        to={item.link}
+                                        className={`flex items-center px-6 py-3 rounded-lg transition-all d_menu_item font-medium hover:bg-d_hover hover:shadow-lg ${location.pathname === item.link ? 'd_active' : 'text-dark'} ${effectiveCollapsed ? 'justify-center px-2' : ''}`}
+                                        onClick={() => setopen(false)}
+                                        tabIndex={0}
+                                        aria-label={item.name}
+                                    >
+                                        <span className={`${!effectiveCollapsed ? 'mr-4' : ''} transition-all duration-300`}>{item.icon}</span>
+                                        {!effectiveCollapsed && <span>{item.name}</span>}
+                                    </Link>
+                                )}
+                                {/* Tooltip only on desktop and when collapsed */}
+                                {isDesktop && effectiveCollapsed && (
+                                    <span
+                                        className="fixed z-50 px-2 py-1 rounded bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap"
+                                        style={{
+                                            left: '80px', // 20 * 4px (w-20)
+                                            top: `calc(${idx * 48 + 80}px)`, // 48px per item, 80px for header, adjust as needed
+                                        }}
+                                    >
+                                        {item.name}
+                                    </span>
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             </nav>
         </aside>

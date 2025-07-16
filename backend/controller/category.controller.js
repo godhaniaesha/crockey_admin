@@ -3,6 +3,11 @@ const Category = require('../model/category.model');
 // Create a new category
 exports.createCategory = async (req, res) => {
     try {
+        // Check for existing category (case-insensitive)
+        const existing = await Category.findOne({ name: req.body.name }).collation({ locale: 'en', strength: 2 });
+        if (existing) {
+            return res.status(400).json({ success: false, error: 'Category name must be unique (case-insensitive)' });
+        }
         const categoryData = {
             ...req.body,
             image: req.file ? req.file.filename : undefined,
@@ -80,6 +85,12 @@ exports.getCategoryById = async (req, res) => {
 // Update a category by ID
 exports.updateCategory = async (req, res) => {
     try {
+        if (req.body.name) {
+            const existing = await Category.findOne({ name: req.body.name, _id: { $ne: req.params.id } }).collation({ locale: 'en', strength: 2 });
+            if (existing) {
+                return res.status(400).json({ success: false, error: 'Category name must be unique (case-insensitive)' });
+            }
+        }
         const updateData = { ...req.body };
         if (req.file) {
             updateData.image = req.file.filename;

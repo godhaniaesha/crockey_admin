@@ -9,13 +9,14 @@ const {
     salesTarget
 } = require('../controller/dashboard.controller');
 const { requireAdmin } = require('../middleware/auth.middleware');
+const authenticate = require('../middleware/authenticate'); // <-- FIXED
 
 // All dashboard routes require admin access
-router.get('/summary', requireAdmin, summary);
-router.get('/sales-overview', requireAdmin, salesOverview);
-router.get('/category-distribution', requireAdmin, categoryDistribution);
-router.get('/top-products', requireAdmin, topProducts);
-router.get('/recent-activities', requireAdmin, recentActivities);
-router.get('/sales-target', requireAdmin, salesTarget);
+router.get('/summary', authenticate, summary);
+router.get('/sales-overview', authenticate, salesOverview);
+router.get('/category-distribution',authenticate, categoryDistribution);
+router.get('/top-products', authenticate,topProducts);
+router.get('/recent-activities', recentActivities);
+router.get('/sales-target', salesTarget);
 
-module.exports = router; 
+module.exports = router;

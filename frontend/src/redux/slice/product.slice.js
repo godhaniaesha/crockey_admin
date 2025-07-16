@@ -17,6 +17,22 @@ export const fetchProducts = createAsyncThunk(
     }
   }
 );
+export const fetchProductsforshop = createAsyncThunk(
+  'product/fetchProductsforshop',
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await axios.get('http://localhost:5000/api/products/getall?active=all', config);
+      console.log("Product fetched..!!", response.data)
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
 
 export const getProductById = createAsyncThunk(
   'product/getProductById',
@@ -157,6 +173,18 @@ const productSlice = createSlice({
         state.products = action.payload;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchProductsforshop.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProductsforshop.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+      })
+      .addCase(fetchProductsforshop.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

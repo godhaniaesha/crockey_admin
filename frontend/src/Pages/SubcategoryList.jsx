@@ -7,6 +7,7 @@ import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import { useNavigate, useParams } from "react-router-dom";
 import { toggleSubcategoryStatus } from "../redux/slice/subcat.slice.jsx";
 import Spinner from "./Spinner";
+import { jwtDecode } from "jwt-decode";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -20,6 +21,18 @@ function SubcategoryList(props) {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [deleteId, setDeleteId] = React.useState(null);
   const [togglingSubcatId, setTogglingSubcatId] = React.useState(null);
+
+  let userRole = null;
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      userRole = decoded.role; // Adjust if needed
+    } catch (e) {
+      userRole = null;
+    }
+  }
+  const isAdmin = userRole === 'admin';
 
   const openDeleteModal = (id) => {
     setDeleteId(id);
@@ -110,7 +123,7 @@ function SubcategoryList(props) {
               <th className="z_subcat_th">Subcategory Details</th>
               <th className="z_subcat_th">Description</th>
               <th className="z_subcat_th">Status</th>
-              <th className="z_subcat_th">Actions</th>
+              {isAdmin && <th className="z_subcat_th">Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -155,22 +168,24 @@ function SubcategoryList(props) {
                     </span>
                   )}
                 </td>
-                <td className="z_subcat_td">
-                  <button
-                    className="z_subcat_actionBtn z_subcat_editBtn"
-                    title="Edit"
-                    onClick={() => navigate(`/edit-subcategory/${item._id || item.subcat_id}`)}
-                  >
-                    <RiEdit2Fill />
-                  </button>
-                  <button
-                    className="z_subcat_actionBtn z_subcat_deleteBtn"
-                    title="Delete"
-                    onClick={() => openDeleteModal(item._id || item.subcat_id)}
-                  >
-                    <RiDeleteBin5Fill />
-                  </button>
-                </td>
+                {isAdmin && (
+                  <td className="z_subcat_td">
+                    <button
+                      className="z_subcat_actionBtn z_subcat_editBtn"
+                      title="Edit"
+                      onClick={() => navigate(`/edit-subcategory/${item._id || item.subcat_id}`)}
+                    >
+                      <RiEdit2Fill />
+                    </button>
+                    <button
+                      className="z_subcat_actionBtn z_subcat_deleteBtn"
+                      title="Delete"
+                      onClick={() => openDeleteModal(item._id || item.subcat_id)}
+                    >
+                      <RiDeleteBin5Fill />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

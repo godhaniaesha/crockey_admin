@@ -43,7 +43,7 @@ exports.createProduct = async (req, res) => {
 };
 
 // Get all products (only active ones by default)
-exports.getAllProducts = async (req, res) => {
+exports.getAllProductsforshop = async (req, res) => {
     try {
         const filter = {};
         
@@ -70,7 +70,40 @@ exports.getAllProducts = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+exports.getAllProducts = async (req, res) => {
+    try {
+        const filter = {};
 
+        // Only filter by active if not 'all'
+        if (req.query.active === undefined || req.query.active === 'true') {
+            filter.active = true;
+        } else if (req.query.active === 'true' || req.query.active === 'false') {
+            filter.active = false;
+        }
+        // If req.query.active === 'all', do not filter by active
+
+        // Role-based filtering
+        if (req.user.role === 'seller') {
+            filter.user_id = req.user._id; // Only seller's products
+        }
+        // If admin, no need to add user_id filter (shows all)
+
+        const products = await Product.find(filter)
+            .populate('user_id')
+            .populate('category_id')
+            .populate('subcategory_id');
+
+        // Filter products where category and subcategory are active
+        const filteredProducts = products.filter(product => {
+            return product.category_id && product.category_id.active && 
+                   product.subcategory_id && product.subcategory_id.active;
+        });
+
+        res.status(200).json(addDiscountPriceToArray(filteredProducts));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 // Get active products only (for public display)
 exports.getActiveProducts = async (req, res) => {
     try {

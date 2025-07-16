@@ -5,6 +5,11 @@ const Category = require('../model/category.model');
 // Create a new subcategory
 exports.createSubcategory = async (req, res) => {
     try {
+        // Check for existing subcategory (case-insensitive)
+        const existing = await Subcategory.findOne({ name: req.body.name }).collation({ locale: 'en', strength: 2 });
+        if (existing) {
+            return res.status(400).json({ error: 'Subcategory name must be unique (case-insensitive)' });
+        }
         const subcategoryData = {
             ...req.body,
             image: req.file ? req.file.filename : undefined,
@@ -56,6 +61,12 @@ exports.getSubcategoryById = async (req, res) => {
 // Update a subcategory by ID
 exports.updateSubcategory = async (req, res) => {
     try {
+        if (req.body.name) {
+            const existing = await Subcategory.findOne({ name: req.body.name, _id: { $ne: req.params.id } }).collation({ locale: 'en', strength: 2 });
+            if (existing) {
+                return res.status(400).json({ error: 'Subcategory name must be unique (case-insensitive)' });
+            }
+        }
         const updateData = { ...req.body };
         if (req.file) {
             updateData.image = req.file.filename;

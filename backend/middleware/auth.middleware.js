@@ -247,7 +247,7 @@ const requireSellerOwnership = async (req, res, next) => {
 };
 
 // Middleware specifically for product ownership
-const requireProductOwnership = async (req, res, next) => {
+const   requireProductOwnership = async (req, res, next) => {
     try {
         await authenticateToken(req, res, async (err) => {
             if (err) return next(err);

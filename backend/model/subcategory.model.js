@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const subcategorySchema = mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     description: {
         type: String
@@ -21,5 +22,8 @@ const subcategorySchema = mongoose.Schema({
         default: true
     }
 }, { timestamps: true });
+
+// Add a case-insensitive unique index for name
+subcategorySchema.index({ name: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 
 module.exports = mongoose.model('Subcategory', subcategorySchema); 
