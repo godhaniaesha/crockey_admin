@@ -66,11 +66,24 @@ export const deleteOrder = createAsyncThunk(
   }
 );
 
+export const fetchSellerOrders = createAsyncThunk(
+  'order/fetchSellerOrders',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/orders/seller-orders', getConfig());
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 const orderSlice = createSlice({
   name: 'order',
   initialState: {
     orders: [],
     myOrders: [],
+    sellerOrders: [],
     loading: false,
     error: null,
   },
@@ -91,8 +104,10 @@ const orderSlice = createSlice({
       .addCase(updateOrderStatus.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
       .addCase(deleteOrder.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(deleteOrder.fulfilled, (state, action) => { state.loading = false; state.orders = state.orders.filter(o => o._id !== action.payload); })
-      .addCase(deleteOrder.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+      .addCase(deleteOrder.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
+      .addCase(fetchSellerOrders.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(fetchSellerOrders.fulfilled, (state, action) => { state.loading = false; state.sellerOrders = action.payload; })
+      .addCase(fetchSellerOrders.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
   },
 });
-
 export default orderSlice.reducer; 

@@ -201,44 +201,55 @@ const Dashboard = () => {
                   <h2 className="d_DS-chart-title">Category Distribution</h2>
                 </div>
                 <div className="d_DS-chart-container d_DS-pie-chart">
-                  <ResponsiveContainer width="100%" height={280} className="absolute md:top-[-10%] top-[-14%]">
-                    <PieChart>
-                      <Pie
-                        data={categoryDistribution}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={90}
-                        paddingAngle={8}
-                        dataKey="count"
-                        nameKey="category"
-                        stroke="#fff"
-                        strokeWidth={2}
-                      >
-                        {categoryDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={[NAVY1, NAVY2, "#9DB2BF", "#D8D8D8"][index % 4]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#fff',
-                          border: '1px solid #e6eef5',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                        }}
-                        formatter={(value, name) => [`${value} units`, name]}
+                  {categoryDistribution && categoryDistribution.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={280} className="absolute md:top-[-10%] top-[-14%]">
+                      <PieChart>
+                        <Pie
+                          data={categoryDistribution}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={90}
+                          paddingAngle={8}
+                          dataKey="count"
+                          nameKey="category"
+                          stroke="#fff"
+                          strokeWidth={2}
+                        >
+                          {categoryDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={[NAVY1, NAVY2, "#9DB2BF", "#D8D8D8"][index % 4]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #e6eef5',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                          }}
+                          formatter={(value, name) => [`${value} units`, name]}
+                        />
+                        <Legend
+                          verticalAlign="bottom"
+                          height={36}
+                          wrapperStyle={{
+                            paddingTop: '20px',
+                            fontSize: '12px',
+                            color: '#64748b'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                      <img
+                        src={require('../Image/norecordfound.png')}
+                        alt="No records found"
+                        style={{ width: 150, margin: "0 auto", display: "block" }}
                       />
-                      <Legend
-                        verticalAlign="bottom"
-                        height={36}
-                        wrapperStyle={{
-                          paddingTop: '20px',
-                          fontSize: '12px',
-                          color: '#64748b'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                      {/* <div>No records found.</div> */}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -252,22 +263,33 @@ const Dashboard = () => {
                   <FaStar className="text-[#254D70]" />
                 </div>
                 <div className="d_DS-products-list">
-                  {(topProducts || []).map((prod, idx) => (
-                    <div key={prod.name || idx} className="d_DS-product-item">
-                      <div className="d_DS-product-rank">{prod.rank || idx + 1}</div>
-                      <div className="d_DS-product-info">
-                        <h4 className="d_DS-product-name">{prod.name}</h4>
-                        <div className="d_DS-product-meta">
-                          <span className="d_DS-product-sales">{prod.sales} sales</span>
-                          {/* <span className="d_DS-product-growth">{prod.growth}</span> */}
+                  {(topProducts && topProducts.length > 0) ? (
+                    topProducts.map((prod, idx) => (
+                      <div key={prod.name || idx} className="d_DS-product-item">
+                        <div className="d_DS-product-rank">{prod.rank || idx + 1}</div>
+                        <div className="d_DS-product-info">
+                          <h4 className="d_DS-product-name">{prod.name}</h4>
+                          <div className="d_DS-product-meta">
+                            <span className="d_DS-product-sales">{prod.sales} sales</span>
+                            {/* <span className="d_DS-product-growth">{prod.growth}</span> */}
+                          </div>
                         </div>
+                        {/* <div className="d_DS-product-rating">
+                          <FaStar className="text-yellow-400" />
+                          <span>{prod.rating}</span>
+                        </div> */}
                       </div>
-                      {/* <div className="d_DS-product-rating">
-                        <FaStar className="text-yellow-400" />
-                        <span>{prod.rating}</span>
-                      </div> */}
+                    ))
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                      <img
+                        src={require('../Image/norecordfound.png')}
+                        alt="No records found"
+                        style={{ width: 150, margin: "0 auto", display: "block" }}
+                      />
+                      {/* <div>No records found.</div> */}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 

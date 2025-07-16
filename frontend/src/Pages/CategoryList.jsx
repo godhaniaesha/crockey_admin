@@ -6,6 +6,7 @@ import { RiDeleteBin5Fill, RiEdit2Fill } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import { useNavigate } from "react-router-dom";
 import Spinner from "./Spinner";
+import { jwtDecode } from "jwt-decode";
 
 // Sample data for fallback
 const sampleData = [];
@@ -99,6 +100,18 @@ function CategoryList(props) {
 
   const categoryToDelete = safeCategories.find(cat => cat._id === deleteId);
 
+  let userRole = null;
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      userRole = decoded.role; // Adjust if your backend puts role elsewhere
+    } catch (e) {
+      userRole = null;
+    }
+  }
+  const isAdmin = userRole === 'admin';
+
   // Show loading state
   if (loading) {
     return <Spinner />;
@@ -132,12 +145,14 @@ function CategoryList(props) {
                 setCurrentPage(1);
               }}
             />
-            <button 
-              className="z_catList_addBtn"
-              onClick={() => navigate('/category/add')}
-            >
-              + Add Category
-            </button>
+            {isAdmin && (
+              <button 
+                className="z_catList_addBtn"
+                onClick={() => navigate('/category/add')}
+              >
+                + Add Category
+              </button>
+            )}
           </div>
         </div>
 
@@ -150,7 +165,7 @@ function CategoryList(props) {
                 <th className="z_catList_th">Category Name</th>
                 <th className="z_catList_th">Description</th>
                 <th className="z_catList_th">Status</th>
-                <th className="z_catList_th">Actions</th>
+                {isAdmin && <th className="z_catList_th">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -192,22 +207,24 @@ function CategoryList(props) {
                       </span>
                     )}
                   </td>
-                  <td className="z_catList_td">
-                    <button
-                      className="z_catList_actionBtn z_catList_editBtn"
-                      title="Edit"
-                      onClick={() => handleEdit(item._id)}
-                    >
-                      <RiEdit2Fill />
-                    </button>
-                    <button
-                      className="z_catList_actionBtn z_catList_deleteBtn"
-                      title="Delete"
-                      onClick={() => openDeleteModal(item._id)}
-                    >
-                      <RiDeleteBin5Fill />
-                    </button>
-                  </td>
+                  {isAdmin && (
+                    <td className="z_catList_td">
+                      <button
+                        className="z_catList_actionBtn z_catList_editBtn"
+                        title="Edit"
+                        onClick={() => handleEdit(item._id)}
+                      >
+                        <RiEdit2Fill />
+                      </button>
+                      <button
+                        className="z_catList_actionBtn z_catList_deleteBtn"
+                        title="Delete"
+                        onClick={() => openDeleteModal(item._id)}
+                      >
+                        <RiDeleteBin5Fill />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

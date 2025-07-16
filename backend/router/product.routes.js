@@ -7,7 +7,8 @@ const {
     updateProduct,
     deleteProduct,
     getLowStockProducts,
-    toggleProductStatus
+    toggleProductStatus,
+    getAllProductsforshop
 } = require('../controller/product.controller');
 const { 
     requireAdmin, 
@@ -17,6 +18,7 @@ const {
 } = require('../middleware/auth.middleware');
 const multer = require('multer');
 const path = require('path');
+const authenticate = require('../middleware/authenticate');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -32,7 +34,8 @@ const upload = multer({ storage: storage });
 router.post('/', requireAdminOrSeller, upload.array('images',5), createProduct);
 
 // Read all products (public access)
-router.get('/', getAllProducts);
+router.get('/', authenticate, getAllProducts);
+router.get('/getall',  getAllProductsforshop);
 
 // Get low stock products (admin only) - must come before /:id route
 router.get('/low-stock', requireAdmin, getLowStockProducts);

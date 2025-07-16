@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../redux/slice/product.slice";
+import { fetchProductsforshop } from "../redux/slice/product.slice";
 import { createCart, addOrUpdateProduct, fetchCarts } from "../redux/slice/cart.slice";
 import "../style/x_app.css";
 import { GrCart } from "react-icons/gr";
@@ -57,7 +57,7 @@ const Product = () => {
       : [];
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchProductsforshop());
   }, [dispatch]);
 
   // Auto-close filter offcanvas on window resize to <= 767px
