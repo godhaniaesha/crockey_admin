@@ -145,12 +145,15 @@ const Sidebar = ({ open, setopen }) => {
                                 ordersSubmenu = [
                                     { name: 'Order List', link: '/orders/list' },
                                     { name: 'Orders I Placed', link: '/orders/placed' },
-                                    { name: 'Orders for My Products', link: '/orders/for-my-products' }
+                                    { name: 'Orders for My Products', link: '/orders/for-my-products' },
+                                    { name: 'Orders View', link: '/orders/singleOrder' }
+
                                 ];
                             } else {
                                 ordersSubmenu = [
                                     { name: 'Orders I Placed', link: '/orders/placed' },
-                                    { name: 'Orders for My Products', link: '/orders/for-my-products' }
+                                    { name: 'Orders for My Products', link: '/orders/for-my-products' },
+                                    { name: 'Orders View', link: '/orders/singleOrder' }
                                 ];
                             }
                             return (

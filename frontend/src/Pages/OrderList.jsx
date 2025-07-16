@@ -5,12 +5,14 @@ import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill, RiEyeFill } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import Spinner from "./Spinner";
+import { useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 
 function OrderList() {
   const dispatch = useDispatch();
   const { orders, loading, error } = useSelector((state) => state.order);
+  const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -44,6 +46,10 @@ function OrderList() {
     dispatch(deleteOrder(id));
   };
 
+  const handleView = (order) => {
+    navigate("/singleOrder", { state: { order } });
+  };
+
   if (loading) return <Spinner />;
   if (error) return <div style={{ color: "red" }}>{error}</div>;
 
@@ -67,7 +73,15 @@ function OrderList() {
               {/* SVG search icon */}
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                 <circle cx="9" cy="9" r="7" stroke="#254d70" strokeWidth="2" />
-                <line x1="14.5" y1="14.5" x2="19" y2="19" stroke="#254d70" strokeWidth="2" strokeLinecap="round" />
+                <line
+                  x1="14.5"
+                  y1="14.5"
+                  x2="19"
+                  y2="19"
+                  stroke="#254d70"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
               </svg>
             </span>
           </div>
@@ -92,7 +106,9 @@ function OrderList() {
             {paginatedData.map((order) => (
               <tr className="z_odrHis_tr" key={order._id}>
                 <td className="z_odrHis_td">{order._id}</td>
-                <td className="z_odrHis_td">{new Date(order.createdAt).toLocaleString()}</td>
+                <td className="z_odrHis_td">
+                  {new Date(order.createdAt).toLocaleString()}
+                </td>
                 <td className="z_odrHis_td">
                   {[
                     ...new Set(
@@ -111,24 +127,35 @@ function OrderList() {
                   {order.user_id?.username || order.user_id?.email || "N/A"}
                 </td>
                 <td className="z_odrHis_td">
-                  {order.products?.reduce((sum, p) => sum + (p.quantity || 0), 0)}
+                  {order.products?.reduce(
+                    (sum, p) => sum + (p.quantity || 0),
+                    0
+                  )}
                 </td>
                 <td className="z_odrHis_td">₹{order.totalAmount}</td>
                 <td className="z_odrHis_td">
-                  <span className={`z_odrHis_paymentBadge z_odrHis_payment--${order.paymentStatus}`}>
+                  <span
+                    className={`z_odrHis_paymentBadge z_odrHis_payment--${order.paymentStatus}`}
+                  >
                     {order.paymentStatus}
                   </span>
                 </td>
                 <td className="z_odrHis_td">
-                  <span className={`z_odrHis_statusBadge z_odrHis_status--${order.orderStatus}`}>
+                  <span
+                    className={`z_odrHis_statusBadge z_odrHis_status--${order.orderStatus}`}
+                  >
                     {order.orderStatus}
                   </span>
                 </td>
                 <td className="z_odrHis_td">
-                  <button className="z_odrHis_actionBtn z_odrHis_viewBtn" title="View" onClick={() => alert(`View order ${order._id}`)}>
+
+                  <button
+                    className="z_odrHis_actionBtn z_odrHis_viewBtn"
+                    title="View"
+                    onClick={() => handleView(order)}
+                  >
                     <RiEyeFill />
                   </button>
-                
                 </td>
               </tr>
             ))}
@@ -136,9 +163,9 @@ function OrderList() {
         </table>
       </div>
       {totalPages > 1 && (
-        <div className="z_odrHis_pagin_container">
+        <div className="z_pagin_container">
           <button
-            className="z_odrHis_pagin_btn"
+            className="z_pagin_btn"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
@@ -147,14 +174,14 @@ function OrderList() {
           {[...Array(totalPages)].map((_, idx) => (
             <button
               key={idx + 1}
-              className={`z_odrHis_pagin_btn${currentPage === idx + 1 ? " z_odrHis_pagin_active" : ""}`}
+              className={`z_pagin_btn${currentPage === idx + 1 ? " z_pagin_active" : ""}`}
               onClick={() => handlePageChange(idx + 1)}
             >
               {idx + 1}
             </button>
           ))}
           <button
-            className="z_odrHis_pagin_btn"
+            className="z_pagin_btn"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >

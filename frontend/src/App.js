@@ -26,6 +26,7 @@ import CheckOut from './Pages/CheckOut';
 import Spinner from './Pages/Spinner.js';
 import OrdersPlacedTable from './Pages/OrdersPlacedTable';
 import OrdersForMyProductsTable from './Pages/OrdersForMyProductsTable';
+import OrderView from './Pages/OrderView.jsx'
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
           <Route path='checkOut' element={<CheckOut />} />
           <Route path='orders/placed' element={<OrdersPlacedTable />} />
           <Route path='orders/for-my-products' element={<OrdersForMyProductsTable />} />
+          <Route path='/singleOrder' element={<OrderView />} />
 
           {/* edit */}
           <Route path="/edit-category/:id" element={<CategoryForm />} />
