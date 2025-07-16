@@ -4,11 +4,12 @@ import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Pagination, Autoplay } from 'swiper/modules';
-import { deleteCart, fetchUserCarts, updateCart } from '../redux/slice/cart.slice';
+import { deleteCart, fetchUserCarts, updateCart, removeProduct } from '../redux/slice/cart.slice';
 import 'swiper/css/pagination';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
+import norecordfound from '../Image/norecordfound.png';
 
 const coupons = [
   { code: 'SAVE10', desc: 'Get 10% off', btn: 'Apply Coupon' },
@@ -32,14 +33,12 @@ function Cart() {
           return;
         }
         const decoded = jwtDecode(token);
-
-        console.log("decoded", decoded._id);
         await dispatch(fetchUserCarts(decoded._id)).unwrap();
       } catch (error) {
         console.error('Data fetching error:', error);
       }
     };
-
+  
     fetchCartData();
   }, [dispatch]);
 
@@ -66,6 +65,20 @@ function Cart() {
     }
   };
 
+  const handleRemoveProduct = async (cartId, productId) => {
+    // Optimistically remove from local state
+    setLocalProducts(prev => prev.filter(item => item.product_id._id !== productId));
+    try {
+      const token = localStorage.getItem('token');
+      const decoded = jwtDecode(token);
+      await dispatch(removeProduct({ user_id: decoded._id, product_id: productId })).unwrap();
+    } catch (error) {
+      console.error('Remove product error:', error);
+      // Optionally restore product if error
+      // setLocalProducts(products);
+    }
+  };
+
   const getTotal = (item) => {
     const price = item.products[0]?.product_id.price;
     const quantity = item.products[0]?.quantity;
@@ -77,7 +90,14 @@ function Cart() {
 
   const cart = cartItems[0] || {};
   const products = cart.products || [];
-  const cartTotal = products.reduce((sum, item) => {
+  const [localProducts, setLocalProducts] = useState(products);
+
+  // Sync localProducts with Redux products when cart changes
+  useEffect(() => {
+    setLocalProducts(products);
+  }, [products]);
+
+  const cartTotal = localProducts.reduce((sum, item) => {
     return sum + (item.product_id.price * item.quantity);
   }, 0);
 
@@ -134,52 +154,65 @@ function Cart() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((item) => (
-                      <tr className="z_cart_tr" key={item._id}>
-                        <td className="z_cart_td">
+                    {localProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center py-4">
                           <img
-                            src={`http://localhost:5000/uploads/${item.product_id.images[0]}`}
-                            alt={item.product_id.name}
-                            className="z_cart_img"
+                            src={require('../Image/norecordfound.png')}
+                            alt="No records found"
+                            style={{ width: 150, margin: "0 auto", display: "block" }}
                           />
-                        </td>
-                        <td className="z_cart_td">{item.product_id.name}</td>
-                        <td className="z_cart_td">${item.product_id.price.toFixed(2)}</td>
-                        <td className="z_cart_td">
-                          <div className="z_qty_wrapper">
-                            <button
-                              type="button"
-                              className="z_qty_btn"
-                              onClick={() => handleQuantityChange(cart._id, item.quantity - 1, item.product_id._id)}
-                              disabled={item.quantity <= 1}
-                              aria-label="Decrease quantity"
-                            >
-                              –
-                            </button>
-                            <span className="z_qty_value">{item.quantity}</span>
-                            <button
-                              type="button"
-                              className="z_qty_btn"
-                              onClick={() => handleQuantityChange(cart._id, item.quantity + 1, item.product_id._id)}
-                              aria-label="Increase quantity"
-                            >
-                              +
-                            </button>
-
-                          </div>
-                        </td>
-                        <td className="z_cart_td">${(item.product_id.price * item.quantity).toFixed(2)}</td>
-                        <td className="z_cart_td">
-                          <button
-                            className="z_cart_actionBtn z_cart_deleteBtn"
-                            title="Delete"
-                            onClick={() => handleDelete(cart._id)}
-                          >
-                            <RiDeleteBin5Fill />
-                          </button>
+                          {/* <div>No records found.</div> */}
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      localProducts.map((item) => (
+                        <tr className="z_cart_tr" key={item._id}>
+                          <td className="z_cart_td">
+                            <img
+                              src={`http://localhost:5000/uploads/${item.product_id.images[0]}`}
+                              alt={item.product_id.name}
+                              className="z_cart_img"
+                            />
+                          </td>
+                          <td className="z_cart_td">{item.product_id.name}</td>
+                          <td className="z_cart_td">${item.product_id.price.toFixed(2)}</td>
+                          <td className="z_cart_td">
+                            <div className="z_qty_wrapper">
+                              <button
+                                type="button"
+                                className="z_qty_btn"
+                                onClick={() => handleQuantityChange(cart._id, item.quantity - 1, item.product_id._id)}
+                                disabled={item.quantity <= 1}
+                                aria-label="Decrease quantity"
+                              >
+                                –
+                              </button>
+                              <span className="z_qty_value">{item.quantity}</span>
+                              <button
+                                type="button"
+                                className="z_qty_btn"
+                                onClick={() => handleQuantityChange(cart._id, item.quantity + 1, item.product_id._id)}
+                                aria-label="Increase quantity"
+                              >
+                                +
+                              </button>
+
+                            </div>
+                          </td>
+                          <td className="z_cart_td">${(item.product_id.price * item.quantity).toFixed(2)}</td>
+                          <td className="z_cart_td">
+                            <button
+                              className="z_cart_actionBtn z_cart_deleteBtn"
+                              title="Delete"
+                              onClick={() => handleRemoveProduct(cart._id, item.product_id._id)}
+                            >
+                              <RiDeleteBin5Fill />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -234,7 +267,7 @@ function Cart() {
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Discount</span>
                 <span className="font-medium text-green-600">
-                  – ${discount > 0 ? discount.toFixed(2) : '0.00'}
+                  – ${discount > 0 ? discount.toFixed(2).replace(/\\.$/, '') : '0.00'}
                   {appliedCoupon ? ` (${appliedCoupon.code})` : ''}
                 </span>
               </div>
