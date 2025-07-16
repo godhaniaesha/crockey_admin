@@ -298,7 +298,7 @@
 }
 @media (max-width: 768px) {
   .d_MP-container {
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
   }
   .d_MP-section-title {
     font-size: 1.1rem;

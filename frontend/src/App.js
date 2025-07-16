@@ -24,6 +24,7 @@ import CouponForm from './Pages/CouponForm';
 import CouponEditForm from './Pages/CouponEditForm';
 import CheckOut from './Pages/CheckOut';
 import Spinner from './Pages/Spinner.js';
+import OrderView from './Pages/OrderView.jsx'
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
           <Route path='coupons/list' element={<CouponList />} />       
           <Route path='/profile' element={<Profile />} />
           <Route path='checkOut' element={<CheckOut />} />
+          <Route path='/singleOrder' element={<OrderView />} />
 
           {/* edit */}
           <Route path="/edit-category/:id" element={<CategoryForm />} />
