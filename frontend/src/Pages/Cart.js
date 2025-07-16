@@ -75,8 +75,10 @@ function Cart() {
   // Convert carts object to array if needed
   const cartItems = Array.isArray(carts) ? carts : Object.values(carts || {});
 
-  const cartTotal = cartItems.reduce((sum, item) => {
-    return sum + (item.products[0]?.product_id.price * item.products[0]?.quantity);
+  const cart = cartItems[0] || {};
+  const products = cart.products || [];
+  const cartTotal = products.reduce((sum, item) => {
+    return sum + (item.product_id.price * item.quantity);
   }, 0);
 
   // Calculate discount based on applied coupon
@@ -132,37 +134,33 @@ function Cart() {
                     </tr>
                   </thead>
                   <tbody>
-                    {cartItems.map((item) => (
+                    {products.map((item) => (
                       <tr className="z_cart_tr" key={item._id}>
                         <td className="z_cart_td">
                           <img
-                            src={`http://localhost:5000/uploads/${item.products[0]?.product_id.images[0]}`}
-                            alt={item.products[0]?.product_id.name}
+                            src={`http://localhost:5000/uploads/${item.product_id.images[0]}`}
+                            alt={item.product_id.name}
                             className="z_cart_img"
                           />
                         </td>
-                        <td className="z_cart_td">{item.products[0]?.product_id.name}</td>
-                        <td className="z_cart_td">${item.products[0]?.product_id.price.toFixed(2)}</td>
+                        <td className="z_cart_td">{item.product_id.name}</td>
+                        <td className="z_cart_td">${item.product_id.price.toFixed(2)}</td>
                         <td className="z_cart_td">
                           <div className="z_qty_wrapper">
                             <button
                               type="button"
                               className="z_qty_btn"
-                              onClick={() => handleQuantityChange(item._id, item.products[0].quantity - 1, item.products[0].product_id._id)}
-                              disabled={item.products[0]?.quantity <= 1}
+                              onClick={() => handleQuantityChange(cart._id, item.quantity - 1, item.product_id._id)}
+                              disabled={item.quantity <= 1}
                               aria-label="Decrease quantity"
                             >
                               –
                             </button>
-                            <span className="z_qty_value">{item.products[0]?.quantity}</span>
+                            <span className="z_qty_value">{item.quantity}</span>
                             <button
                               type="button"
                               className="z_qty_btn"
-                              onClick={() => {
-                                const quantity = item.products?.[0]?.quantity ?? 1;
-                                const productId = item.products?.[0]?.product_id?._id;
-                                if (productId) handleQuantityChange(item._id, quantity + 1, productId);
-                              }}
+                              onClick={() => handleQuantityChange(cart._id, item.quantity + 1, item.product_id._id)}
                               aria-label="Increase quantity"
                             >
                               +
@@ -170,12 +168,12 @@ function Cart() {
 
                           </div>
                         </td>
-                        <td className="z_cart_td">${getTotal(item)}</td>
+                        <td className="z_cart_td">${(item.product_id.price * item.quantity).toFixed(2)}</td>
                         <td className="z_cart_td">
                           <button
                             className="z_cart_actionBtn z_cart_deleteBtn"
                             title="Delete"
-                            onClick={() => handleDelete(item._id)}
+                            onClick={() => handleDelete(cart._id)}
                           >
                             <RiDeleteBin5Fill />
                           </button>

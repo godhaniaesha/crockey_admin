@@ -39,8 +39,8 @@ const Product = () => {
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
   const [search, setSearch] = useState("");
   const { carts = [] } = useSelector((state) => state.cart) || {};
-  const authState = useSelector((state) => state.auth);
-  const user = authState?.user;
+  // const authState = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
   const navigate = useNavigate();
   
 
@@ -130,7 +130,6 @@ const Product = () => {
   }, [dispatch, user]);
 
   const handleAddToCart = async (product) => {
-    // console.log("user in handleAddToCart:", product);
     if (!user) {
       alert('User not logged in');
       return;
@@ -138,36 +137,12 @@ const Product = () => {
 
     try {
       setAddingToCart(product._id);
-      const userCart = carts.find(cart => cart.user_id === user._id);
-
-      if (!userCart) {
-        // No cart exists - create new cart with the product
-        const cartData = {
-          user_id: user._id,
-          products: [
-            {
-              product_id: product._id,
-              quantity: 1
-            }
-          ]
-        };
-        await dispatch(createCart(cartData)).unwrap();
-      } else {
-        // Cart exists - check if product is already in cart
-        const existingProduct = userCart.products?.find(
-          p => p.product_id === product._id
-        );
-
-        if (existingProduct) {
-          const updateData = {
-            cart_id: userCart._id,
-            product_id: product._id,
-            quantity: existingProduct.quantity + 1
-          };
-          await dispatch(addOrUpdateProduct(updateData)).unwrap();
-        }
-      }
-
+      const data = {
+        user_id: user._id,
+        product_id: product._id,
+        quantity: 1
+      };
+      await dispatch(addOrUpdateProduct(data)).unwrap();
       dispatch(fetchCarts());
     } catch (error) {
       console.error('Error adding to cart:', error);
