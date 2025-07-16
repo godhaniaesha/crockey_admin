@@ -1,5 +1,5 @@
 const Cart = require('../model/cart.model');
-const Product = require('../model/product.model');
+const Product = require('../model/product.model')
 const Category = require('../model/category.model');
 const Subcategory = require('../model/subcategory.model');
 

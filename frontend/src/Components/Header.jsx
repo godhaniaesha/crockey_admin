@@ -102,16 +102,16 @@ const Header = ({ open, setopen }) => {
                   Logout
                 </button>
               ) : (
-                <button
-                  type="button"
-                  className="z_custom_dropdownItem"
-                  onClick={handleSignIn}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <RiLoginBoxFill className="text-lg" />
-                  Sign in
-                </button>
+              <button
+                type="button"
+                className="z_custom_dropdownItem"
+                onClick={handleSignIn}
+                onMouseDown={(e) => e.preventDefault()}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <RiLoginBoxFill className="text-lg" />
+                Sign in
+              </button>
               )}
             </div>
           )}
