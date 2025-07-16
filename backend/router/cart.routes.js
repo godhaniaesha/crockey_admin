@@ -15,11 +15,11 @@ const { authenticateToken } = require('../middleware/auth.middleware');
 // All cart routes require user authentication
 router.post('/', authenticateToken, createCart);
 router.get('/', authenticateToken, getAllCarts);
+router.post('/add-or-update', authenticateToken, addOrUpdateProduct);
+router.post('/remove', authenticateToken, removeProduct);
 router.get('/:id', authenticateToken, getCartById);
 router.put('/:id', authenticateToken, updateCart);
 router.delete('/:id', authenticateToken, deleteCart);
-router.post('/add-or-update', authenticateToken, addOrUpdateProduct);
-router.post('/remove', authenticateToken, removeProduct);
 router.get('/get-user-cart/:id', authenticateToken, getUserCart);
 
 module.exports = router; 

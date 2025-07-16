@@ -2,13 +2,15 @@ import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getUserById } from "../redux/slice/auth.slice";
 import { placeOrder } from "../redux/slice/order.slice";
+
 
 const CheckOut = () => {
     const location = useLocation();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { user } = useSelector((state) => state.auth);
 
@@ -25,6 +27,12 @@ const CheckOut = () => {
     });
 
     const checkOutData = location.state;
+
+    useEffect(() => {
+        if (!location.state) {
+            navigate('/cart'); // or any page you want to send them to
+        }
+    }, [location, navigate]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -112,16 +120,36 @@ const CheckOut = () => {
         try {
             await dispatch(placeOrder(payload)).unwrap();
             alert('Order Placed Successfully!');
+
+            // Reset form
+            setForm({
+                firstName: '',
+                lastName: '',
+                mobileNo: '',
+                email: '',
+                country: '',
+                address: '',
+                city: '',
+                state: '',
+                pinCode: ''
+            });
+
+            // Clear cart (if you have such an action)
+            // dispatch(clearCart()); // This line is removed as per the edit hint.
+
+            // Redirect (optional)
+            navigate('/orders/placed');
         } catch (error) {
             console.error("Order failed:", error);
             alert('Order placement failed.');
         }
     };
 
-
     // if (loading) {
     //     return <div className="flex justify-center items-center h-64">Loading...</div>;
     // }
+
+
 
     return (
         <>

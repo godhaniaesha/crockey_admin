@@ -122,7 +122,11 @@ exports.placeOrder = async (req, res) => {
 
         // Clear only ordered products from cart
         const orderedProductIds = orderProducts.map(p => p.product_id.toString());
-        cart.products = cart.products.filter(item => !orderedProductIds.includes(item.product_id._id.toString()));
+        cart.products = cart.products.filter(item =>
+          !orderedProductIds.includes(
+            (item.product_id._id ? item.product_id._id : item.product_id).toString()
+          )
+        );
         await cart.save();
 
         res.status(201).json({

@@ -9,7 +9,8 @@ export const tokenExpiryMiddleware = (store) => (next) => (action) => {
     (
       action.payload.toLowerCase().includes('token expired') ||
       action.payload.toLowerCase().includes('jwt expired') ||
-      action.payload.toLowerCase().includes('unauthorized')
+      action.payload.toLowerCase().includes('unauthorized') ||
+      action.payload.toLowerCase().includes('Invalid token')
     )
   ) {
     // Remove sensitive data

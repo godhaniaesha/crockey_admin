@@ -22,7 +22,7 @@ export const fetchUserCarts = createAsyncThunk(
       if (!token) {
         return rejectWithValue('No authentication token found');
       }
-      
+
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const response = await axios.get(`http://localhost:5000/api/carts/get-user-cart/${userId}`, config);
       return response.data;
@@ -123,15 +123,15 @@ const cartSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-       .addCase(fetchUserCarts.pending, (state) => {
+      .addCase(fetchUserCarts.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchUserCarts.fulfilled, (state, action) => {
         state.loading = false;
-        state.carts = Array.isArray(action.payload) 
-    ? action.payload 
-    : Object.values(action.payload || {});
+        state.carts = Array.isArray(action.payload)
+          ? action.payload
+          : Object.values(action.payload || {});
       })
       .addCase(fetchUserCarts.rejected, (state, action) => {
         state.loading = false;
