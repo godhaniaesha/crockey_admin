@@ -1,13 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchWishlists = createAsyncThunk(
   'wishlist/fetchWishlists',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get('http://localhost:5000/api/wishlist/', config);
+      const response = await axiosInstance.get('/wishlist/');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -19,9 +17,7 @@ export const createWishlist = createAsyncThunk(
   'wishlist/createWishlist',
   async (wishlistData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/wishlist/', wishlistData, config);
+      const response = await axiosInstance.post('/wishlist/', wishlistData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -33,9 +29,7 @@ export const updateWishlist = createAsyncThunk(
   'wishlist/updateWishlist',
   async ({ id, wishlistData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.put(`http://localhost:5000/api/wishlist/${id}`, wishlistData, config);
+      const response = await axiosInstance.put(`/wishlist/${id}`, wishlistData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -47,9 +41,7 @@ export const deleteWishlist = createAsyncThunk(
   'wishlist/deleteWishlist',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:5000/api/wishlist/${id}`, config);
+      await axiosInstance.delete(`/wishlist/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -61,9 +53,7 @@ export const addProductToWishlist = createAsyncThunk(
   'wishlist/addProductToWishlist',
   async (data, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/wishlist/add', data, config);
+      const response = await axiosInstance.post('/wishlist/add', data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -75,9 +65,7 @@ export const removeProductFromWishlist = createAsyncThunk(
   'wishlist/removeProductFromWishlist',
   async (data, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/wishlist/remove', data, config);
+      const response = await axiosInstance.post('/wishlist/remove', data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

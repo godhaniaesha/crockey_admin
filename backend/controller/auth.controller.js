@@ -21,7 +21,7 @@ const generateTokens = async (id) => {
                 role: user.role
             },
             process.env.ACCESS_TOKEN_KEY,
-            { expiresIn: '15h' });
+            { expiresIn: '1m' });
 
         const refreshToken = await jwt.sign(
             {
@@ -89,26 +89,26 @@ const generateNewToken = async (req, res) => {
                     })
             }
 
+            // Always generate new tokens
             const { assesToken, refreshToken } = await generateTokens(decoded._id);
 
-            const userDetails = await Register.findOne({ email: USERS.email }).select("-password -refreshToken");
-            console.log("userDetailsss", userDetails);
+            // Set cookies for new tokens
+            res.cookie("accessToken", assesToken, { httpOnly: true, secure: true, maxAge: 15*60*1000, sameSite:"None" });
+            res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, maxAge:15*24*60*60*1000, sameSite:"None" });
 
-            const option = {
-                httpOnly: true,
-                secure: true
-            }
-
-            return res.status(200)
-            .cookie("accessToken", assesToken, { httpOnly: true, secure: true, maxAge: 15*60*1000, sameSite:"None" })
-            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, maxAge:15*24*60*60*1000, sameSite:"None" })
-            .json({ success: true, finduser: userDetails, data: userDetails, accessToken: assesToken,refreshToken:refreshToken });
+            // Respond with new tokens in body as well
+            return res.status(200).json({
+                success: true,
+                accessToken: assesToken,
+                refreshToken: refreshToken,
+                message: "Token refreshed successfully"
+            });
 
         } catch (error) {
             return res.status(500).json({
                 success: false,
                 data: [],
-                error: "Error in register user: " + error.message
+                error: "Error in refresh token: " + error.message
             })
         }
     });

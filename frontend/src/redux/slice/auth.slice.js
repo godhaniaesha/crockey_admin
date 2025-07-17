@@ -1,14 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
-const BaseUrl = "http://localhost:5000";
 
 // Async thunk for user registration
 export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (userData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BaseUrl}/api/auth/register`, userData);
+            const response = await axiosInstance.post(`/auth/register`, userData);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -21,7 +20,7 @@ export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async (userData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BaseUrl}/api/auth/login`, userData);
+            const response = await axiosInstance.post(`/auth/login`, userData);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -34,7 +33,7 @@ export const forgotPassword = createAsyncThunk(
     'auth/forgotPassword',
     async (email, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BaseUrl}/api/auth/forgot-password`, { email });
+            const response = await axiosInstance.post(`/auth/forgot-password`, { email });
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -47,7 +46,7 @@ export const verifyOTP = createAsyncThunk(
     'auth/verifyOTP',
     async (otpData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BaseUrl}/api/auth/verify-password-reset-otp`, otpData);
+            const response = await axiosInstance.post(`/auth/verify-password-reset-otp`, otpData);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -60,7 +59,7 @@ export const resetPassword = createAsyncThunk(
     'auth/resetPassword',
     async (resetData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${BaseUrl}/api/auth/reset-password`, resetData);
+            const response = await axiosInstance.post(`/auth/reset-password`, resetData);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -75,7 +74,7 @@ export const fetchUserProfile = createAsyncThunk(
         try {
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await axios.get(`${BaseUrl}/api/auth/users/${userId}`, config);
+            const response = await axiosInstance.get(`/auth/users/${userId}`);
             // console.log("resposne",response.data.data);
             
             return response.data.data.data;
@@ -92,7 +91,7 @@ export const updateUserProfile = createAsyncThunk(
         try {
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await axios.put(`${BaseUrl}/api/auth/change-profile/${userId}`, formData, config);
+            const response = await axiosInstance.put(`/auth/change-profile/${userId}`, formData, config);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -106,7 +105,7 @@ export const getUserById = createAsyncThunk(
         try {
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await axios.get(`${BaseUrl}/api/auth/users/${userId}`, config);
+            const response = await axiosInstance.get(`/auth/users/${userId}`, config);
 
             return response.data;
         } catch (error) {

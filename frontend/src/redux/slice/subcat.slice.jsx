@@ -1,15 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchSubcategories = createAsyncThunk(
   'subcategory/fetchSubcategories',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : {};
-      const response = await axios.get('http://localhost:5000/api/subcategories/', config);
+      const response = await axiosInstance.get('/subcategories/');
       console.log(response.data, "Subcategory fetched..!!") 
       return response.data;
     } catch (error) {
@@ -22,18 +18,7 @@ export const createSubcategory = createAsyncThunk(
   'subcategory/createSubcategory',
   async (formData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      const response = await axios.post(
-        'http://localhost:5000/api/subcategories/',
-        formData,
-        config
-      );
+      const response = await axiosInstance.post('/subcategories/', formData);
       return response.data; // adjust if your backend wraps in {result: ...}
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -45,17 +30,9 @@ export const updateSubcategory = createAsyncThunk(
   'subcategory/updateSubcategory',
   async ({ id, formData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      const response = await axios.put(
-        `http://localhost:5000/api/subcategories/${id}`,
-        formData,
-        config
+      const response = await axiosInstance.put(
+        `/subcategories/${id}`,
+        formData
       );
       return response.data;
     } catch (error) {
@@ -68,11 +45,7 @@ export const deleteSubcategory = createAsyncThunk(
   'subcategory/deleteSubcategory',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : {};
-      await axios.delete(`http://localhost:5000/api/subcategories/${id}`, config);
+      await axiosInstance.delete(`/subcategories/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -84,16 +57,8 @@ export const toggleSubcategoryStatus = createAsyncThunk(
   'subcategory/toggleSubcategoryStatus',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.patch(
-        `http://localhost:5000/api/subcategories/${id}/toggle-status`,
-        {},
-        config
+      const response = await axiosInstance.patch(
+        `/subcategories/${id}/toggle-status`
       );
       return response.data.subcategory || response.data.result || response.data; // Adjust based on backend
     } catch (error) {

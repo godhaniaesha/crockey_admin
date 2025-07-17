@@ -1,22 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchCategories = createAsyncThunk(
     'category/fetchCategories',
     async (_, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                return rejectWithValue('Token not found in local storage.');
-            }
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-            const response = await axios.get('http://localhost:5000/api/categories/', config);
-            console.log(response.data, 'Fetch all Category...!!');
-
+            const response = await axiosInstance.get('/categories/');
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || error.message);
@@ -28,17 +17,9 @@ export const createCategory = createAsyncThunk(
     'category/createCategory',
     async (formData, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
-                },
-            };
-            const response = await axios.post(
-                'http://localhost:5000/api/categories/',
+            const response = await axiosInstance.post(
+                '/categories/',
                 formData,
-                config
             );
             console.log(response.data.result, "Category Created..!!")
             return response.data.result; // or response.data, depending on your backend
@@ -52,17 +33,9 @@ export const updateCategory = createAsyncThunk(
   'category/updateCategory',
   async ({ id, formData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      const response = await axios.put(
-        `http://localhost:5000/api/categories/${id}`,
+      const response = await axiosInstance.put(
+        `/categories/${id}`,
         formData,
-        config
       );
       return response.data.result;
     } catch (error) {
@@ -75,13 +48,7 @@ export const deleteCategory = createAsyncThunk(
   'category/deleteCategory',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      await axios.delete(`http://localhost:5000/api/categories/${id}`, config);
+      await axiosInstance.delete(`/categories/${id}`);
       return id; // Return the deleted id for updating state
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -93,16 +60,9 @@ export const toggleCategoryStatus = createAsyncThunk(
   'category/toggleCategoryStatus',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.patch(
-        `http://localhost:5000/api/categories/${id}/toggle-status`,
+      const response = await axiosInstance.patch(
+        `/categories/${id}/toggle-status`,
         {},
-        config
       );
       return response.data.category || response.data.result || response.data; // Adjust based on backend
     } catch (error) {
