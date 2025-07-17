@@ -110,7 +110,7 @@ function SubcategoryList(props) {
             />
             <RiSearchLine className="z_subcat_searchIcon" />
           </div>
-          <button className="z_subcat_addBtn">+ Add Subcategory</button>
+          <button className="z_subcat_addBtn" onClick={() => navigate('/subcategory/add')}>+ Add Subcategory</button>
         </div>
       </div>
 

@@ -240,8 +240,8 @@
     font-size: 0.9rem;
   }
   .z_catList_img {
-    width: 35px;
-    height: 35px;
+    width: 50px;
+    height: 50px;
   }
   .z_catList_actionBtn {
     width: 22px;
@@ -847,8 +847,8 @@
     font-size: 0.95rem;
   }
   .z_subcat_img {
-    width: 35px;
-    height: 35px;
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -910,8 +910,8 @@
 
 @media (max-width: 576px) {
   .z_subcat_img {
-    width: 35px;
-    height: 35px;
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -1312,8 +1312,8 @@
     font-size: 0.9rem;
   }
   .z_prd_img {
-    width: 35px;
-    height: 35px;
+    width: 50px;
+    height: 50px;
   }
   .z_prd_actionBtn {
     width: 22px;
@@ -2459,8 +2459,8 @@
     font-size: 0.9rem;
   }
   .z_coupon_img {
-    width: 22px;
-    height: 22px;
+    width: 50px;
+    height: 50px;
   }
   .z_coupon_actionBtn {
     width: 22px;
@@ -2885,8 +2885,8 @@
     font-size: 0.9rem;
   }
   .z_offer_product_img {
-    width: 22px;
-    height: 22px;
+    width: 50px;
+    height: 50px;
   }
   .z_offer_actionBtn {
     width: 22px;
@@ -3458,8 +3458,8 @@
 }
 
 .z_cart_actionBtn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3559,8 +3559,8 @@
     font-size: 0.9rem;
   }
   .z_cart_img {
-    width: 22px;
-    height: 22px;
+    width: 50px;
+    height: 50px;
   }
   .z_cart_actionBtn {
     width: 22px;

@@ -207,7 +207,7 @@ function Cart() {
                               title="Delete"
                               onClick={() => handleRemoveProduct(cart._id, item.product_id._id)}
                             >
-                              <RiDeleteBin5Fill />
+                              <RiDeleteBin5Fill style={{ width: 18 }}/>
                             </button>
                           </td>
                         </tr>
