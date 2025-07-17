@@ -1,13 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchCarts = createAsyncThunk(
   'cart/fetchCarts',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.get('http://localhost:5000/api/carts/', config);
+      const response = await axiosInstance.get('/carts/');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -18,13 +16,7 @@ export const fetchUserCarts = createAsyncThunk(
   'cart/fetchUserCarts',
   async (userId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        return rejectWithValue('No authentication token found');
-      }
-
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get(`http://localhost:5000/api/carts/get-user-cart/${userId}`, config);
+      const response = await axiosInstance.get(`/carts/get-user-cart/${userId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -35,9 +27,7 @@ export const createCart = createAsyncThunk(
   'cart/createCart',
   async (cartData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/carts/', cartData, config);
+      const response = await axiosInstance.post('/carts/', cartData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -49,9 +39,7 @@ export const updateCart = createAsyncThunk(
   'cart/updateCart',
   async ({ id, cartData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.put(`http://localhost:5000/api/carts/${id}`, cartData, config);
+      const response = await axiosInstance.put(`/carts/${id}`, cartData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -63,9 +51,7 @@ export const deleteCart = createAsyncThunk(
   'cart/deleteCart',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:5000/api/carts/${id}`, config);
+      await axiosInstance.delete(`/carts/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -77,9 +63,7 @@ export const addOrUpdateProduct = createAsyncThunk(
   'cart/addOrUpdateProduct',
   async (data, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/carts/add-or-update', data, config);
+      const response = await axiosInstance.post('/carts/add-or-update', data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -91,9 +75,7 @@ export const removeProduct = createAsyncThunk(
   'cart/removeProduct',
   async (data, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/carts/remove', data, config);
+      const response = await axiosInstance.post('/carts/remove', data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

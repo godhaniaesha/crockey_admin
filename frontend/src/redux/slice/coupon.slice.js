@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchCoupons = createAsyncThunk(
   'coupon/fetchCoupons',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/coupons/');
+      const response = await axiosInstance.get('/coupons/');
       console.log("Coupons response:", response);
       
       return response.data;
@@ -20,9 +20,7 @@ export const createCoupon = createAsyncThunk(
   'coupon/createCoupon',
   async (couponData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.post('http://localhost:5000/api/coupons/', couponData, config);
+      const response = await axiosInstance.post('/coupons/', couponData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -34,9 +32,7 @@ export const updateCoupon = createAsyncThunk(
   'coupon/updateCoupon',
   async ({ id, couponData }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const response = await axios.put(`http://localhost:5000/api/coupons/${id}`, couponData, config);
+      const response = await axiosInstance.put(`/coupons/${id}`, couponData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -48,9 +44,7 @@ export const deleteCoupon = createAsyncThunk(
   'coupon/deleteCoupon',
   async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:5000/api/coupons/${id}`, config);
+      await axiosInstance.delete(`/coupons/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

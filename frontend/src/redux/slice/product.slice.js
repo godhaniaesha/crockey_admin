@@ -1,15 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchProducts = createAsyncThunk(
   'product/fetchProducts',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : {};
-      const response = await axios.get('http://localhost:5000/api/products?active=all', config);
+      const response = await axiosInstance.get('/products?active=all');
       console.log("Product fetched..!!", response.data)
       return response.data;
     } catch (error) {
@@ -21,11 +17,7 @@ export const fetchProductsforshop = createAsyncThunk(
   'product/fetchProductsforshop',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : {};
-      const response = await axios.get('http://localhost:5000/api/products/getall?active=all', config);
+      const response = await axiosInstance.get('/products/getall?active=all');
       console.log("Product fetched..!!", response.data)
       return response.data;
     } catch (error) {
@@ -38,11 +30,7 @@ export const getProductById = createAsyncThunk(
   'product/getProductById',
   async (productId, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : {};
-      const response = await axios.get(`http://localhost:5000/api/products/${productId}`, config);
+      const response = await axiosInstance.get(`/products/${productId}`);
       console.log("Single product fetched..!!", response.data);
       return response.data;
     } catch (error) {
@@ -55,24 +43,11 @@ export const createProduct = createAsyncThunk(
   'product/createProduct',
   async (formData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
-      // Get userId from localStorage
       const userId = localStorage.getItem('userId');
       if (userId && !formData.has('user_id')) {
         formData.append('user_id', userId);
       }
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      const response = await axios.post(
-        'http://localhost:5000/api/products/',
-        formData,
-        config
-      );
-      // If your backend returns { result: { ...product } }
+      const response = await axiosInstance.post('/products/', formData);
       return response.data.result || response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -91,7 +66,7 @@ export const updateProduct = createAsyncThunk(
           'Content-Type': 'multipart/form-data',
         },
       };
-      const response = await axios.put(
+      const response = await axiosInstance.put(
         `http://localhost:5000/api/products/${id}`,
         formData,
         config
@@ -113,7 +88,7 @@ export const deleteProduct = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.delete(
+      const response = await axiosInstance.delete(
         `http://localhost:5000/api/products/${id}`,
         config
       );
@@ -135,7 +110,7 @@ export const toggleProductStatus = createAsyncThunk(
         },
       };
       console.log('Toggling product status for ID:', id);
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         `http://localhost:5000/api/products/${id}/toggle-status`,
         {},
         config

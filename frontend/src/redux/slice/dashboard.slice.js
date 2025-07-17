@@ -1,16 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const getConfig = () => {
-  const token = localStorage.getItem('token');
-  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-};
+import axiosInstance from '../../util/axiosInstance';
 
 export const fetchSummary = createAsyncThunk(
   'dashboard/fetchSummary',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/dashboard/summary', getConfig());
+      const response = await axiosInstance.get('/dashboard/summary');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -22,7 +17,7 @@ export const fetchSalesOverview = createAsyncThunk(
   'dashboard/fetchSalesOverview',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/dashboard/sales-overview', getConfig());
+      const response = await axiosInstance.get('/dashboard/sales-overview');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -34,7 +29,7 @@ export const fetchCategoryDistribution = createAsyncThunk(
   'dashboard/fetchCategoryDistribution',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/dashboard/category-distribution', getConfig());
+      const response = await axiosInstance.get('/dashboard/category-distribution');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -46,7 +41,7 @@ export const fetchTopProducts = createAsyncThunk(
   'dashboard/fetchTopProducts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/dashboard/top-products', getConfig());
+      const response = await axiosInstance.get('/dashboard/top-products');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -58,7 +53,7 @@ export const fetchRecentActivities = createAsyncThunk(
   'dashboard/fetchRecentActivities',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/dashboard/recent-activities', getConfig());
+      const response = await axiosInstance.get('/dashboard/recent-activities');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -70,7 +65,7 @@ export const fetchSalesTarget = createAsyncThunk(
   'dashboard/fetchSalesTarget',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/dashboard/sales-target', getConfig());
+      const response = await axiosInstance.get('/dashboard/sales-target');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
