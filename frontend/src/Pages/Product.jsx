@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProductsforshop } from "../redux/slice/product.slice";
 import { createCart, addOrUpdateProduct, fetchCarts } from "../redux/slice/cart.slice";
@@ -39,10 +39,17 @@ const Product = () => {
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
   const [search, setSearch] = useState("");
   const { carts = [] } = useSelector((state) => state.cart) || {};
-  // const authState = useSelector((state) => state.auth);
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const navigate = useNavigate();
   
+  // Get user from localStorage once and memoize it
+  const user = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      return null;
+    }
+  }, []);
+  
+  const navigate = useNavigate();
 
   const { categories = [] } = useSelector((state) => state.category) || {};
   const safeCategories = Array.isArray(categories?.result)
@@ -58,9 +65,17 @@ const Product = () => {
       ? subcategories
       : [];
 
+  // Fetch products only once on mount
   useEffect(() => {
     dispatch(fetchProductsforshop());
   }, [dispatch]);
+
+  // Fetch carts only once when component mounts and user exists
+  useEffect(() => {
+    if (user && user._id) {
+      dispatch(fetchCarts());
+    }
+  }, [dispatch, user]); // Remove user from dependency if it's stable
 
   // Auto-close filter offcanvas on window resize to <= 767px
   useEffect(() => {
@@ -105,12 +120,14 @@ const Product = () => {
   const handleSubcategory = (subId) => {
     setSelectedSubcategoryId((prev) => (prev === subId ? null : subId));
   };
+  
   const handleColor = (color) => {
     setSelectedColors((prev) =>
       prev.includes(color) ? prev : [...prev, color]
     );
     setShowColorPalette(false);
   };
+  
   const handlePrice = (idx, value) => {
     let newPrice = [...price];
     newPrice[idx] = Number(value);
@@ -118,18 +135,10 @@ const Product = () => {
     if (idx === 0 && newPrice[0] > newPrice[1]) newPrice[0] = newPrice[1];
     if (idx === 1 && newPrice[1] < newPrice[0]) newPrice[1] = newPrice[0];
     setPrice(newPrice);
-    // Removed setShowFilter(false) so dropdown does not close on price change
   };
 
-  // Cart functionality from try.js
-  useEffect(() => {
-    // Fetch user's carts when component mounts
-    if (user) {
-      dispatch(fetchCarts());
-    }
-  }, [dispatch, user]);
-
-  const handleAddToCart = async (product) => {
+  // Optimized handleAddToCart - removed fetchCarts call
+  const handleAddToCart = useCallback(async (product) => {
     if (!user) {
       alert('User not logged in');
       return;
@@ -142,22 +151,32 @@ const Product = () => {
         product_id: product._id,
         quantity: 1
       };
+      
+      // Only call addOrUpdateProduct, don't fetch carts immediately
       await dispatch(addOrUpdateProduct(data)).unwrap();
-      dispatch(fetchCarts());
+      
+      // Optional: You can update the cart state optimistically here
+      // or fetch carts only when user navigates to cart page
+      
     } catch (error) {
       console.error('Error adding to cart:', error);
+      alert('Failed to add item to cart');
     } finally {
       setAddingToCart(null);
     }
-  };
+  }, [dispatch, user]);
 
   // Filter products based on selected category and subcategory
   let displayProducts = products;
 
-  // Calculate min and max price from products
-  const prices = products.map(p => p.price).filter(Boolean);
-  const minPrice = prices.length ? Math.min(...prices) : 0;
-  const maxPrice = prices.length ? Math.max(...prices) : 1000;
+  // Calculate min and max price from products - memoize this
+  const priceRange = React.useMemo(() => {
+    const prices = products.map(p => p.price).filter(Boolean);
+    return {
+      min: prices.length ? Math.min(...prices) : 0,
+      max: prices.length ? Math.max(...prices) : 1000
+    };
+  }, [products]);
 
   // Filter by price
   displayProducts = displayProducts.filter(
@@ -199,21 +218,24 @@ const Product = () => {
     });
   }
 
+  // Set price range only once when products change
   useEffect(() => {
-    if (prices.length) {
-      setPrice([minPrice, maxPrice]);
+    if (priceRange.min !== undefined && priceRange.max !== undefined) {
+      setPrice([priceRange.min, priceRange.max]);
     }
-    // eslint-disable-next-line
-  }, [products]);
+  }, [priceRange.min, priceRange.max]);
 
-  const allColors = Array.from(
-    new Set(
-      products
-        .flatMap(p => p.colors || [])
-        .map(c => typeof c === 'string' ? c : c.name || c.code || '')
-        .filter(Boolean)
-    )
-  );
+  // Memoize allColors calculation
+  const allColors = React.useMemo(() => {
+    return Array.from(
+      new Set(
+        products
+          .flatMap(p => p.colors || [])
+          .map(c => typeof c === 'string' ? c : c.name || c.code || '')
+          .filter(Boolean)
+      )
+    );
+  }, [products]);
 
   return (
     <>
@@ -283,7 +305,6 @@ const Product = () => {
             </div>
             <div className="p-4">
               {/* Category */}
-              
               <div>
                 <h3 className="font-semibold text-lg mb-2">Category</h3>
                 {safeCategories.map((cat) => (
@@ -382,8 +403,8 @@ const Product = () => {
                     {/* Min slider */}
                     <input
                       type="range"
-                      min={minPrice}
-                      max={maxPrice}
+                      min={priceRange.min}
+                      max={priceRange.max}
                       step="10"
                       value={price[0]}
                       onChange={(e) => handlePrice(0, e.target.value)}
@@ -393,8 +414,8 @@ const Product = () => {
                     {/* Max slider */}
                     <input
                       type="range"
-                      min={minPrice}
-                      max={maxPrice}
+                      min={priceRange.min}
+                      max={priceRange.max}
                       step="10"
                       value={price[1]}
                       onChange={(e) => handlePrice(1, e.target.value)}
@@ -461,20 +482,6 @@ const Product = () => {
               );
             })
           }
-          {/* <span className="x_filter_tag cursor-pointer" onClick={() => setShowColorPalette(v => !v)}>
-          Color
-        </span>
-        {showColorPalette && (
-          <div className="absolute z-50 mt-2 left-24 flex gap-2 bg-white p-2 rounded-lg shadow border border-gray-200">
-            {colors.map((color, idx) => (
-              <span
-                key={idx}
-                className={`w-6 h-6 rounded-full border border-gray-300 ${color} inline-block cursor-pointer`}
-                onClick={() => handleColor(color)}
-              ></span>
-            ))}
-          </div>
-        )} */}
           {selectedColors.map((color, idx) => (
             <span
               key={color}
@@ -505,20 +512,15 @@ const Product = () => {
             <div className="col-span-full text-center text-red-500">{error}</div>
           ) : Array.isArray(displayProducts) && displayProducts.length > 0 ? (
             displayProducts.map((product) => (
-              // console.log(product)
-              
               <div
                 key={product._id || product.id}
                 className="x_product_card group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
-                
                 style={{ cursor: "pointer" }}
               >
                 {/* Product Image Container */}
                 <div className="x_product_image_container relative overflow-hidden">
                   <img
-                    src={
-                      `http://localhost:5000/uploads/${product.images}`
-                    }
+                    src={`http://localhost:5000/uploads/${product.images}`}
                     alt={product.name}
                     className="x_product_image w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
                   />
@@ -530,11 +532,12 @@ const Product = () => {
                   )}
                   {/* Quick Actions */}
                   <div className="x_quick_actions absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors">
-                      <FaRegEye className="w-4 h-4 text-gray-600" />
-                    </button> */}
-                    <button className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors"
-                      onClick={() => handleAddToCart(product)}
+                    <button 
+                      className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
                       disabled={addingToCart === product._id}
                     >
                       {addingToCart === product._id ? (
@@ -551,7 +554,7 @@ const Product = () => {
                   {/* Category & Brand */}
                   <div className="x_product_meta flex items-center gap-2 mb-2">
                     <span className="x_category text-xs x_blue bg-blue-50 px-2 py-1 rounded-full">
-                      {product.category_id.name || "-"}
+                      {product.category_id?.name || "-"}
                     </span>
                     <span className="x_brand text-xs text-gray-500">
                       {product.brand || "-"}
