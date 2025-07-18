@@ -60,7 +60,7 @@ function App() {
           <Route path='checkOut' element={<CheckOut />} />
           <Route path='orders/placed' element={<OrdersPlacedTable />} />
           <Route path='orders/for-my-products' element={<OrdersForMyProductsTable />} />
-          <Route path='/singleOrder' element={<OrderView />} />
+          <Route path='orders/singleOrder' element={<OrderView />} />
 
           {/* edit */}
           <Route path="/edit-category/:id" element={<CategoryForm />} />
