@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProductById, clearSingleProduct } from '../redux/slice/product.slice';
+import { addOrUpdateProduct, fetchCarts } from '../redux/slice/cart.slice';
 import '../style/d_style.css';
 import { FaStar, FaRegStar, FaTruck, FaUndoAlt, FaTag, FaCheckCircle } from 'react-icons/fa';
 import Spinner from "./Spinner";
@@ -13,6 +14,8 @@ function ProductDetail() {
   const { singleProduct, loading, error } = useSelector(state => state.product);
   const [mainImg, setMainImg] = useState('');
   const [activeTab, setActiveTab] = useState('Description');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     if (productId) {
@@ -93,6 +96,31 @@ function ProductDetail() {
     'Durable Material'
   ].filter(Boolean);
 
+  const handleAddToCart = async () => {
+    if (!user) {
+      alert('User not logged in');
+      return;
+    }
+    if (!singleProduct) return;
+
+    try {
+      setAddingToCart(true);
+      const data = {
+        user_id: user._id,
+        product_id: singleProduct._id,
+        quantity: 1
+      };
+      await dispatch(addOrUpdateProduct(data)).unwrap();
+      dispatch(fetchCarts());
+      alert('Product added to cart!');
+    } catch (error) {
+      alert('Error adding to cart');
+      console.error(error);
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
   return (
     <div className="pd-bg">
       <div className="pd-card">
@@ -137,7 +165,7 @@ function ProductDetail() {
               )}
             </div>
             {/* Rating and Reviews */}
-            <div className="pd-rating-row" style={{ alignItems: 'center', gap: 10 }}>
+            <div className="pd-rating-row" style={{ alignItems: 'center', gap: 10 }}>yyyyy
               <span className="pd-rating" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <FaStar style={{ color: '#F1C40F', fontSize: 18, marginRight: 2 }} />
                 4.5
@@ -165,8 +193,24 @@ function ProductDetail() {
             </div>
             {/* Add to Cart */}
             <div className='flex align-center justify-center'>
-              <button className="pd-btn" style={{ marginTop: 18, fontWeight: 700, fontSize: 17, display: 'flex', padding: '12px 81px', width: 'fit-content', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 2px 8px 0 #254D7033' }}>
-                Add to Cart
+              <button
+                className="pd-btn"
+                style={{
+                  marginTop: 18,
+                  fontWeight: 700,
+                  fontSize: 17,
+                  display: 'flex',
+                  padding: '12px 81px',
+                  width: 'fit-content',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 2px 8px 0 #254D7033'
+                }}
+                onClick={handleAddToCart}
+                disabled={addingToCart}
+              >
+                {addingToCart ? "Adding..." : "Add to Cart"}
               </button>
             </div>
           </div>

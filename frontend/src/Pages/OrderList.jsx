@@ -47,7 +47,7 @@ function OrderList() {
   };
 
   const handleView = (order) => {
-    navigate("/singleOrder", { state: { order } });
+    navigate("/orders/singleOrder", { state: { order } });
   };
 
   if (loading) return <Spinner />;

@@ -4,6 +4,7 @@ import { fetchSellerOrders } from '../redux/slice/order.slice';
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
 import Spinner from "./Spinner";
 import { RiEyeFill } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 const ITEMS_PER_PAGE = 10;
 
 const OrdersForMyProductsTable = () => {
@@ -11,6 +12,7 @@ const OrdersForMyProductsTable = () => {
   const { sellerOrders = [], loading, error } = useSelector(state => state.order);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchSellerOrders());
@@ -99,7 +101,7 @@ const OrdersForMyProductsTable = () => {
                   <span className={`z_odrHis_statusBadge z_odrHis_status--${order.orderStatus}`}>{order.orderStatus}</span>
                 </td>
                 <td className="z_odrHis_td">
-                  <button className="z_odrHis_actionBtn z_odrHis_viewBtn" title="View" onClick={() => alert(`View order ${order._id}`)}>
+                  <button className="z_odrHis_actionBtn z_odrHis_viewBtn" title="View" onClick={() => navigate("/orders/singleOrder", { state: { order } })}>
                     <RiEyeFill />
                   </button>
                 </td>
@@ -150,4 +152,4 @@ const OrdersForMyProductsTable = () => {
   );
 };
 
-export default OrdersForMyProductsTable; 
+export default OrdersForMyProductsTable;

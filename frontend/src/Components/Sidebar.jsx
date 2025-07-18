@@ -156,6 +156,11 @@ const Sidebar = ({ open, setopen }) => {
                                     { name: 'Orders View', link: '/orders/singleOrder' }
                                 ];
                             }
+                            // Filter out 'Orders View' from the submenu before rendering
+                            const filteredOrdersSubmenu = ordersSubmenu.filter(
+                                (sub) => sub.name !== 'Orders View'
+                            );   
+
                             return (
                                 <li key={item.name} className="relative group">
                                     <button
@@ -187,7 +192,7 @@ const Sidebar = ({ open, setopen }) => {
                                                 transitionProperty: 'max-height, opacity',
                                             }}
                                         >
-                                            {ordersSubmenu.map((sub) => (
+                                            {filteredOrdersSubmenu.map((sub) => (
                                                 <li key={sub.name}>
                                                     <Link
                                                         to={sub.link}
