@@ -35,7 +35,7 @@
 }
 .d_main_content {
   background: #fff;
-  border-radius: 1rem;
+  /* border-radius: 1rem; */
   box-shadow: 0 2px 16px 0 rgba(59,130,246,0.06);
 }
 .d_hover {
@@ -63,7 +63,7 @@
 .d_MP-container {
   background: #f8fafc;
   border: 1px solid #e5e7eb;
-  border-radius: 1rem;
+  border-radius: 0rem;
   box-shadow: 0 2px 16px 0 rgba(59,130,246,0.06);
   width: 100%;
   max-width: none;

@@ -8,7 +8,7 @@
   /* max-width: 1100px; */
   /* margin: 30px auto; */
   background: #fff;
-  border-radius: 16px;
+  border-radius: 0px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   padding: 24px 20px;
 }
@@ -468,7 +468,7 @@
 .z_subcat_container {
   width: 100%;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 0px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   padding: 24px 20px;
 }
@@ -919,7 +919,7 @@
 .z_prd_container {
   width: 100%;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 0px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   padding: 24px 20px;
 }
@@ -1431,7 +1431,7 @@
 .z_odrHis_container {
   width: 100%;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 0px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   padding: 24px 20px;
   padding-bottom: 32px; /* or more if needed */
@@ -2121,7 +2121,7 @@
 .z_coupon_container {
   width: 100%;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 0px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   padding: 24px 20px;
 }

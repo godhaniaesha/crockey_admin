@@ -81,10 +81,10 @@ const sections = [
 
 function PrivacyPolicy() {
   return (
-    <div className="d_PP-bg min-h-screen w-full flex flex-col items-center justify-start py-6 px-2">
+    <div className="d_PP-bg min-h-screen w-full flex flex-col items-center justify-start py-6 px-6 ">
       <div className="d_PP-timeline-card w-full max-w-4xl mx-auto">
         <h1 className="d_PP-title text-center mb-6">Privacy Policy</h1>
-        <div className="d_PP-timeline px-6">
+        <div className="d_PP-timeline px-1 lg:px-6">
           {sections.map((section, idx) => (
             <div className="d_PP-timeline-step" key={idx}>
               <div className="d_PP-timeline-dot-wrap">

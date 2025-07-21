@@ -459,7 +459,7 @@ const Product = () => {
         </div>
       </div>
       {/* Selected Filters Tags */}
-      <div className="container mx-auto px-2">
+      <div className="container mx-auto px-2 pb-5">
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedCategories
             .filter((c) => c)
