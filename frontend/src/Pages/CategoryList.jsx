@@ -180,7 +180,11 @@ function CategoryList(props) {
                     />
                   </td>
                   <td className="z_catList_td">{item.name}</td>
-                  <td className="z_catList_td">{item.description}</td>
+                  <td className="z_catList_td">
+                    {item.description && item.description.length > 60
+                      ? `${item.description.substring(0, 60)}...`
+                      : item.description}
+                  </td>
                   <td className="z_catList_td">
                     <label className="z_switch">
                       <input

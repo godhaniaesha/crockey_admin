@@ -51,7 +51,9 @@ const CategoryForm = () => {
             cat.status === 1 ||
             cat.active === true ||
             cat.active === "Active" ||
-            cat.active === 1,
+            cat.active === 1
+              ? true
+              : false,
           description: cat.description || "",
         });
         if (cat.image) {
@@ -75,7 +77,7 @@ const CategoryForm = () => {
       file,
       url: URL.createObjectURL(file),
     }));
-    setImages((prev) => [...prev, ...newImages]);
+    setImages(newImages); // <-- replace, not append
   };
 
   const handleRemoveImage = (idx) => {
@@ -99,10 +101,8 @@ const CategoryForm = () => {
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setImages({
-        file: e.dataTransfer.files[0],
-        url: URL.createObjectURL(e.dataTransfer.files[0]),
-      });
+      const file = e.dataTransfer.files[0];
+      setImages([{ file, url: URL.createObjectURL(file) }]);
     }
   };
 

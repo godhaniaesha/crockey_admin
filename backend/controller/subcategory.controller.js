@@ -71,6 +71,11 @@ exports.updateSubcategory = async (req, res) => {
         if (req.file) {
             updateData.image = req.file.filename;
         }
+        // Map status to active boolean
+        if (updateData.status !== undefined) {
+            updateData.active = updateData.status === 'Active';
+            delete updateData.status;
+        }
         const updatedSubcategory = await Subcategory.findByIdAndUpdate(
             req.params.id,
             { $set: updateData },

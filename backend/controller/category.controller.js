@@ -95,6 +95,12 @@ exports.updateCategory = async (req, res) => {
         if (req.file) {
             updateData.image = req.file.filename;
         }
+        // --- FIX: Map status to active ---
+        if (req.body.status !== undefined) {
+            updateData.active = req.body.status === "Active";
+            delete updateData.status; // Remove status so it doesn't get saved as a field
+        }
+        // --- END FIX ---
         const updatedCategory = await Category.findByIdAndUpdate(
             req.params.id,
             { $set: updateData },
