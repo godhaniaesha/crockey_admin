@@ -6,7 +6,7 @@ import { createSubcategory, fetchSubcategories, updateSubcategory } from '../red
 import { fetchCategories } from '../redux/slice/category.slice';
 
 const SubCategoryForm = () => {
-    const [form, setForm] = useState({ category_id: '', name: '', description: '', status: 'Active' });
+    const [form, setForm] = useState({ category_id: '', name: '', description: '', status: true });
     const [images, setImages] = useState([]);
     const [dragActive, setDragActive] = useState(false);
     const inputRef = useRef(null);
@@ -48,7 +48,7 @@ const SubCategoryForm = () => {
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
         const newImages = files.map(file => ({ file, url: URL.createObjectURL(file) }));
-        setImages(prev => [...prev, ...newImages]);
+        setImages(newImages); // replace, not append
     };
 
     const handleRemoveImage = (idx) => {
@@ -72,7 +72,8 @@ const SubCategoryForm = () => {
         e.stopPropagation();
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setImages({ file: e.dataTransfer.files[0], url: URL.createObjectURL(e.dataTransfer.files[0]) });
+            const file = e.dataTransfer.files[0];
+            setImages([{ file, url: URL.createObjectURL(file) }]);
         }
     };
 
@@ -99,6 +100,8 @@ const SubCategoryForm = () => {
                 });
                 if (subcat.image) {
                     setImages([{ file: null, url: `http://localhost:5000/uploads/${subcat.image}` }]);
+                } else {
+                    setImages([]);
                 }
             }
         }

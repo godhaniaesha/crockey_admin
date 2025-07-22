@@ -141,7 +141,11 @@ function SubcategoryList(props) {
                     <span className="z_subcat_name">{item.name}</span>
                   </div>
                 </td>
-                <td className="z_subcat_td">{item.description}</td>
+                <td className="z_subcat_td">
+                  {item.description && item.description.length > 60
+                    ? `${item.description.substring(0, 60)}...`
+                    : item.description}
+                </td>
                 <td className="z_subcat_td">
                   <label className="z_subcat_switch">
                     <input

@@ -181,7 +181,11 @@ function ProductTable() {
                         className="z_prd_img"
                       />
                       <div>
-                        <div className="z_prd_name">{item.name}</div>
+                        <div className="z_prd_name">
+                          {item.name && item.name.length > 60
+                            ? `${item.name.substring(0, 60)}...`
+                            : item.name}
+                        </div>
                         <div className="z_prd_size">
                           {colorArray.map((color, index) => (
                             <span
