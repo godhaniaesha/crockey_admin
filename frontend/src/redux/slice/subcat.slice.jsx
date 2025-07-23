@@ -6,7 +6,7 @@ export const fetchSubcategories = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get('/subcategories/');
-      console.log(response.data, "Subcategory fetched..!!") 
+      console.log(response.data, "Subcategory fetched..!!");
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -18,8 +18,16 @@ export const createSubcategory = createAsyncThunk(
   'subcategory/createSubcategory',
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post('/subcategories/', formData);
-      return response.data; // adjust if your backend wraps in {result: ...}
+      const response = await axiosInstance.post(
+        '/subcategories/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // ✅ Necessary for file uploads
+          },
+        }
+      );
+      return response.data; // Adjust if your backend wraps result
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -32,7 +40,12 @@ export const updateSubcategory = createAsyncThunk(
     try {
       const response = await axiosInstance.put(
         `/subcategories/${id}`,
-        formData
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // ✅ Required for file upload
+          },
+        }
       );
       return response.data;
     } catch (error) {
@@ -60,7 +73,7 @@ export const toggleSubcategoryStatus = createAsyncThunk(
       const response = await axiosInstance.patch(
         `/subcategories/${id}/toggle-status`
       );
-      return response.data.subcategory || response.data.result || response.data; // Adjust based on backend
+      return response.data.subcategory || response.data.result || response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -95,7 +108,6 @@ const subcategorySlice = createSlice({
       })
       .addCase(createSubcategory.fulfilled, (state, action) => {
         state.loading = false;
-        // Optionally, add the new subcategory to the list:
         if (Array.isArray(state.subcategories)) {
           state.subcategories.unshift(action.payload);
         }
@@ -110,7 +122,6 @@ const subcategorySlice = createSlice({
       })
       .addCase(updateSubcategory.fulfilled, (state, action) => {
         state.loading = false;
-        // Optionally update the subcategory in the list
         if (Array.isArray(state.subcategories)) {
           const idx = state.subcategories.findIndex(sc => sc._id === action.payload._id);
           if (idx !== -1) state.subcategories[idx] = action.payload;
@@ -140,7 +151,6 @@ const subcategorySlice = createSlice({
       })
       .addCase(toggleSubcategoryStatus.fulfilled, (state, action) => {
         state.loading = false;
-        // Update the subcategory status in the list
         if (Array.isArray(state.subcategories)) {
           const idx = state.subcategories.findIndex(sc => sc._id === action.payload._id);
           if (idx !== -1) state.subcategories[idx] = action.payload;

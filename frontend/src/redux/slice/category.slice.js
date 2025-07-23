@@ -14,20 +14,26 @@ export const fetchCategories = createAsyncThunk(
 );
 
 export const createCategory = createAsyncThunk(
-    'category/createCategory',
-    async (formData, { rejectWithValue }) => {
-        try {
-            const response = await axiosInstance.post(
-                '/categories/',
-                formData,
-            );
-            console.log(response.data.result, "Category Created..!!")
-            return response.data.result; // or response.data, depending on your backend
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || error.message);
+  'category/createCategory',
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(
+        '/categories/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // ✅ VERY IMPORTANT
+          },
         }
+      );
+      console.log(response.data.result, "Category Created..!!");
+      return response.data.result;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
+  }
 );
+
 
 export const updateCategory = createAsyncThunk(
   'category/updateCategory',
@@ -36,6 +42,11 @@ export const updateCategory = createAsyncThunk(
       const response = await axiosInstance.put(
         `/categories/${id}`,
         formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // ✅ Needed for file upload
+          },
+        }
       );
       return response.data.result;
     } catch (error) {
@@ -43,6 +54,7 @@ export const updateCategory = createAsyncThunk(
     }
   }
 );
+
 
 export const deleteCategory = createAsyncThunk(
   'category/deleteCategory',

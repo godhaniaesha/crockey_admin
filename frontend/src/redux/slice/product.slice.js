@@ -47,7 +47,11 @@ export const createProduct = createAsyncThunk(
       if (userId && !formData.has('user_id')) {
         formData.append('user_id', userId);
       }
-      const response = await axiosInstance.post('/products/', formData);
+      const response = await axiosInstance.post('/products/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       return response.data.result || response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

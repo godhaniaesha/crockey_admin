@@ -249,7 +249,13 @@ function CouponList() {
                       {item.code}
                     </span>
                   </td>
-                  <td className="z_coupon_td">{item.description || "No description"}</td>
+                  <td className="z_coupon_td">{
+                    item.description
+                      ? item.description.length > 60
+                        ? item.description.slice(0, 60) + '...'
+                        : item.description
+                      : "No description"
+                  }</td>
                   <td className="z_coupon_td">{formatDate(item.expiresAt)}</td>
                   <td className="z_coupon_td">
                     <label className="z_coupon_switch">
