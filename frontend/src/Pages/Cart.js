@@ -135,7 +135,7 @@ function Cart() {
 
   return (
     <div className="w-full bg-gray-100 flex items-center justify-center py-6">
-      <div className="container mx-auto px-2">
+      <div className="container mx-auto x_pad_space" >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Cart Table */}
           <div className="lg:col-span-2">

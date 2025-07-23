@@ -1224,6 +1224,10 @@
   box-shadow: 0 2px 8px rgba(37, 77, 112, 0.12);
 }
 
+.x_pad_space{
+  margin: auto 1.3rem !important;
+}
+
 /* Responsive styles for ProductTable */
 @media (max-width: 992px) {
   .z_prd_manage_content {
@@ -1365,6 +1369,9 @@
   }
   .z_prd_size {
     font-size: 0.88rem;
+  }
+  .x_pad_space{
+    margin: auto 1rem !important;
   }
 }
 
