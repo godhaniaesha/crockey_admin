@@ -263,7 +263,7 @@ function ProductDetail() {
                 </div>
                 <div className="pd-detail-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <FaUndoAlt style={{ color: '#254D70', fontSize: 16 }} />
-                  <b>Return Policy:</b> Easy 7-day return & exchange
+                  <b className='text-nowrap'>Return Policy:</b> Easy 7-day return & exchange
                 </div>
               </div>
             )}

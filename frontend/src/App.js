@@ -27,6 +27,8 @@ import Spinner from './Pages/Spinner.js';
 import OrdersPlacedTable from './Pages/OrdersPlacedTable';
 import OrdersForMyProductsTable from './Pages/OrdersForMyProductsTable';
 import OrderView from './Pages/OrderView.jsx'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -69,6 +71,7 @@ function App() {
 
         </Route>
       </Routes>
+      <ToastContainer />
     </BrowserRouter>
   );
 }

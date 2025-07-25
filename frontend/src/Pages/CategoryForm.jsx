@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../style/d_style.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,9 +7,17 @@ import {
   fetchCategories,
   updateCategory,
 } from "../redux/slice/category.slice";
-import { useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CategoryForm = () => {
+  const { error } = useSelector(state => state.category);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
   const [form, setForm] = useState({
     categoryName: "",
     status: "Active",
@@ -25,7 +33,6 @@ const CategoryForm = () => {
   const { categories } = useSelector((state) => state.category);
 
   useEffect(() => {
-    // If categories are not loaded, fetch them
     if (
       (!categories ||
         (Array.isArray(categories) && categories.length === 0) ||
@@ -40,18 +47,18 @@ const CategoryForm = () => {
       const cat = Array.isArray(categories?.result)
         ? categories.result.find((c) => c._id === id)
         : Array.isArray(categories)
-        ? categories.find((c) => c._id === id)
-        : null;
+          ? categories.find((c) => c._id === id)
+          : null;
       if (cat) {
         setForm({
           categoryName: cat.name || "",
           status:
             cat.status === "Active" ||
-            cat.status === true ||
-            cat.status === 1 ||
-            cat.active === true ||
-            cat.active === "Active" ||
-            cat.active === 1
+              cat.status === true ||
+              cat.status === 1 ||
+              cat.active === true ||
+              cat.active === "Active" ||
+              cat.active === 1
               ? true
               : false,
           description: cat.description || "",
@@ -77,7 +84,7 @@ const CategoryForm = () => {
       file,
       url: URL.createObjectURL(file),
     }));
-    setImages(newImages); // <-- replace, not append
+    setImages(newImages);
   };
 
   const handleRemoveImage = (idx) => {
@@ -119,27 +126,30 @@ const CategoryForm = () => {
     if (images.length > 0 && images[0].file) {
       formData.append("image", images[0].file);
     }
+
     try {
       if (id) {
         await dispatch(updateCategory({ id, formData })).unwrap();
-        alert("Category Updated!");
+        toast.success("Category updated successfully!");
       } else {
         await dispatch(createCategory(formData)).unwrap();
-        alert("Category Added!");
+        toast.success("Category created successfully!");
       }
+
       setForm({ categoryName: "", status: "Active", description: "" });
       setImages([]);
       dispatch(fetchCategories());
-      navigate("/category/list"); // <-- navigate to the list page
+      setTimeout(() => navigate("/category/list"), 2000); // allow time for toast
     } catch (error) {
-      alert(error);
+      toast.error(error?.message || "Something went wrong.");
     }
   };
 
   return (
     <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
+      <ToastContainer position="top-right" autoClose={3000} />
       <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">
-         {id ? "Update New Category" : "Add New Category"}
+        {id ? "Update New Category" : "Add New Category"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="mb-6">
@@ -147,11 +157,10 @@ const CategoryForm = () => {
             Category Images
           </h3>
           <div
-            className={`d_MP-dropzone flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition ${
-              dragActive
-                ? "border-[#254D70] bg-[#e6eef5]"
-                : "border-[#b6c6d7] bg-[#f8fafc]"
-            }`}
+            className={`d_MP-dropzone flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition ${dragActive
+              ? "border-[#254D70] bg-[#e6eef5]"
+              : "border-[#b6c6d7] bg-[#f8fafc]"
+              }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -250,7 +259,6 @@ const CategoryForm = () => {
           </div>
         </div>
         <div className="mb-6">
-          {/* <h3 className="d_MP-section-title text-xl font-bold mb-4">Description</h3> */}
           <div className="mb-4">
             <label className="d_MP-label block mb-2 font-semibold">
               Description
@@ -266,7 +274,6 @@ const CategoryForm = () => {
             />
           </div>
         </div>
-
         <div className="w-full flex justify-center">
           <button
             type="submit"

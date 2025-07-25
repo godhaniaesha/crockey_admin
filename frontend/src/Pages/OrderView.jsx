@@ -196,25 +196,31 @@ function OrderView() {
                   key={idx}
                 >
                   <img
-                    className="z_history_productImg z_history_productImg_modern"
                     src={
-                      product.product_id.images
-                        ? `http://localhost:5000/uploads/${product.product_id.images}`
-                        : "https://via.placeholder.com/50"
+                      product.product_id && product.product_id.images && product.product_id.images.length > 0
+                        ? `http://localhost:5000/uploads/${product.product_id.images[0]}`
+                        : "https://via.placeholder.com/60x60?text=No+Image"
                     }
-                    alt={product.product_id.name}
+                    alt={product.product_id && product.product_id.name ? product.product_id.name : "Product"}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "2px solid #e9ecef",
+                    }}
                   />
                   <div className="z_history_productInfo z_history_productInfo_modern">
                     <div className="z_history_productName">
-                      {product.product_id.name}
+                      {product.product_id && product.product_id.name ? product.product_id.name : "Product"}
                     </div>
                     <div className="z_history_spacemng">
                       <div className="z_history_productPrice">
-                        ₹{product.product_id.price}
+                        ₹{product.product_id && product.product_id.price ? product.product_id.price : "-"}
                       </div>
                       <div className="z_history_productMeta">
                         <span>Qty: {product.quantity}</span>
-                        {product.product_id.size && (
+                        {product.product_id && product.product_id.size && (
                           <span> | Size: {product.product_id.size}</span>
                         )}
                       </div>
@@ -511,12 +517,11 @@ function OrderView() {
                   >
                     <img
                       src={
-                        product.product_id.images &&
-                        product.product_id.images.length > 0
+                        product.product_id && product.product_id.images && product.product_id.images.length > 0
                           ? `http://localhost:5000/uploads/${product.product_id.images[0]}`
                           : "https://via.placeholder.com/60x60?text=No+Image"
                       }
-                      alt={product.product_id.name}
+                      alt={product.product_id && product.product_id.name ? product.product_id.name : "Product"}
                       style={{
                         width: "60px",
                         height: "60px",
@@ -530,14 +535,14 @@ function OrderView() {
                     style={{ ...enhancedTd, fontWeight: "500", color: "#333" }}
                   >
                     <div style={{ marginBottom: "5px" }}>
-                      {product.product_id.name}
+                      {product.product_id && product.product_id.name ? product.product_id.name : "Product"}
                     </div>
                     <div style={{ fontSize: "12px", color: "#666" }}>
-                      Brand: {product.product_id.brand || "N/A"}
+                      Brand: {product.product_id && product.product_id.brand ? product.product_id.brand : "N/A"}
                     </div>
                   </td>
                   <td style={{ ...enhancedTd, textAlign: "right" }}>
-                    ₹{product.priceAtOrder || product.product_id.price}
+                    ₹{product.priceAtOrder || (product.product_id && product.product_id.price ? product.product_id.price : "-")}
                   </td>
                   <td style={{ ...enhancedTd, textAlign: "center" }}>
                     {product.quantity}
@@ -551,7 +556,7 @@ function OrderView() {
                   >
                     ₹
                     {(
-                      (product.priceAtOrder || product.product_id.price) *
+                      (product.priceAtOrder || (product.product_id && product.product_id.price ? product.product_id.price : 0)) *
                       product.quantity
                     ).toFixed(2)}
                   </td>
