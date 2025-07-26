@@ -10,6 +10,8 @@ import {
 import axios from "axios";
 import { fetchSubcategories } from "../redux/slice/subcat.slice.jsx";
 import { fetchCategories } from "../redux/slice/category.slice";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductForm = () => {
   const [form, setForm] = useState({
@@ -259,16 +261,23 @@ const ProductForm = () => {
     try {
       if (id) {
         await dispatch(updateProduct({ id, formData })).unwrap();
-        alert("Product Updated!");
+        toast.success("Product Updated!");
       } else {
         await dispatch(createProduct(formData)).unwrap();
-        alert("Product Added!");
+        toast.success("Product Added!");
       }
       dispatch(fetchProducts());
       navigate("/product/list");
     } catch (error) {
       console.error("Product create error:", error);
-      alert(error);
+      // Extract backend error message if available
+      let errorMsg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        error?.toString() ||
+        "Something went wrong.";
+      toast.error(errorMsg);
     }
   };
 
@@ -290,7 +299,12 @@ const ProductForm = () => {
     );
   };
 
+  const activeCategories = safeCategories.filter(cat => cat.active);
+  const activeSubcategories = safeSubcategories.filter(sub => sub.active);
+
   return (
+  <>
+  <ToastContainer></ToastContainer>
     <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
       <h2 className="d_MP-title text-3xl font-extrabold mb-8 text-center tracking-wide">
         {id ? "Update New Product" : "Add New Product"}
@@ -407,14 +421,14 @@ const ProductForm = () => {
               >
                 <div className="d_MP-dropdown-selected">
                   {form.category
-                    ? safeCategories.find((cat) => cat._id === form.category)
+                    ? activeCategories.find((cat) => cat._id === form.category)
                       ?.name
                     : "Select category"}
                   <span className="d_MP-dropdown-arrow">▼</span>
                 </div>
                 {categoryOpen && (
                   <ul className="d_MP-dropdown-list" role="listbox">
-                    {safeCategories.map((option) => (
+                    {activeCategories.map((option) => (
                       <li
                         key={option._id}
                         className={`d_MP-dropdown-option${form.category === option._id ? " selected" : ""
@@ -452,7 +466,7 @@ const ProductForm = () => {
               >
                 <div className="d_MP-dropdown-selected">
                   {form.subcategory
-                    ? safeSubcategories.find(
+                    ? activeSubcategories.find(
                       (sub) => sub._id === form.subcategory
                     )?.name
                     : "Select subcategory"}
@@ -460,7 +474,7 @@ const ProductForm = () => {
                 </div>
                 {subcategoryOpen && (
                   <ul className="d_MP-dropdown-list" role="listbox">
-                    {safeSubcategories.map((option) => (
+                    {activeSubcategories.map((option) => (
                       <li
                         key={option._id}
                         className={`d_MP-dropdown-option${form.subcategory === option._id ? " selected" : ""
@@ -720,6 +734,7 @@ const ProductForm = () => {
         </div>
       </form>
     </div>
+  </>
   );
 };
 

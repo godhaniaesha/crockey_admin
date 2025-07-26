@@ -54,7 +54,7 @@ export const createProduct = createAsyncThunk(
       });
       return response.data.result || response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+      return rejectWithValue(error?.response?.data?.error || error?.response?.data?.message || error.message);
     }
   }
 );

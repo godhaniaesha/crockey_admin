@@ -101,7 +101,14 @@ const OrdersForMyProductsTable = () => {
                   <span className={`z_odrHis_statusBadge z_odrHis_status--${order.orderStatus}`}>{order.orderStatus}</span>
                 </td>
                 <td className="z_odrHis_td">
-                  <button className="z_odrHis_actionBtn z_odrHis_viewBtn" title="View" onClick={() => navigate("/orders/singleOrder", { state: { order } })}>
+                  <button className="z_odrHis_actionBtn z_odrHis_viewBtn" title="View" onClick={() => {
+                    // Normalize sellerProducts to products for OrderView
+                    const normalizedOrder = {
+                      ...order,
+                      products: order.sellerProducts || [],
+                    };
+                    navigate("/orders/singleOrder", { state: { order: normalizedOrder } });
+                  }}>
                     <RiEyeFill />
                   </button>
                 </td>

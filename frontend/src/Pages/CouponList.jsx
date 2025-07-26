@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { fetchCoupons, deleteCoupon } from "../redux/slice/coupon.slice";
+import { fetchCoupons, deleteCoupon, updateCoupon } from "../redux/slice/coupon.slice";
 import "../style/z_style.css";
 import { RiDeleteBin5Fill, RiEdit2Fill, RiCoupon3Line } from "react-icons/ri";
 import { GrCaretNext, GrCaretPrevious } from "react-icons/gr";
@@ -143,9 +143,30 @@ function CouponList() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleStatusToggle = (id) => {
-    // TODO: Implement status toggle API
-    console.log("Toggle status for coupon ID:", id);
+  const handleStatusToggle = async (id) => {
+    const coupon = safeCoupons.find(c => (c._id || c.id) === id);
+    if (!coupon) return;
+
+    try {
+      const result = await dispatch(updateCoupon({
+        id,
+        couponData: { ...coupon, active: !coupon.active }
+      }));
+
+      if (updateCoupon.rejected.match(result)) {
+        setToast({
+          show: true,
+          message: 'Failed to update status. Please try again.',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      setToast({
+        show: true,
+        message: 'Error updating status: ' + (error.message || 'Unknown error'),
+        type: 'error'
+      });
+    }
   };
 
   const handleEdit = (id) => {
