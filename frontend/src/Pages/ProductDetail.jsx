@@ -153,7 +153,7 @@ function ProductDetail() {
               )}
             </div>
             {/* Product Name */}
-            <h1 className="pd-title">{singleProduct.name}</h1>
+            <h1 className="pd-title" style={{wordBreak: "break-all"}}>{singleProduct.name}</h1>
             {/* Price, Discount */}
             <div className="pd-price-row" style={{ alignItems: 'center', gap: 12 }}>
               <span className="pd-price">₹{discountPrice}</span>

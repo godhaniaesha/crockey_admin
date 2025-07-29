@@ -169,6 +169,8 @@ function ProductTable() {
               const colorArray = Array.isArray(item.colors)
                 ? (typeof item.colors[0] === 'string' && item.colors[0].includes(',') ? item.colors[0].split(',').map(c => c.trim()) : item.colors)
                 : [];
+              // Truncate helpers
+              const truncate = (str, n) => str && str.length > n ? str.substring(0, n) + "..." : str;
               return (
                 <tr className="z_prd_tr" key={item._id || item.id}>
                   <td className="z_prd_td">
@@ -182,9 +184,7 @@ function ProductTable() {
                       />
                       <div>
                         <div className="z_prd_name">
-                          {item.name && item.name.length > 60
-                            ? `${item.name.substring(0, 60)}...`
-                            : item.name}
+                          {truncate(item.name, 30)}
                         </div>
                         <div className="z_prd_size">
                           {colorArray.map((color, index) => (
@@ -216,8 +216,8 @@ function ProductTable() {
                       </div>
                     </div>
                   </td>
-                  <td className="z_prd_td">{categoryName}</td>
-                  <td className="z_prd_td">{subcategoryName}</td>
+                  <td className="z_prd_td">{truncate(categoryName, 20)}</td>
+                  <td className="z_prd_td">{truncate(subcategoryName, 20)}</td>
                   <td className="z_prd_td">₹{item.price}</td>
                   <td className="z_prd_td">{item.stock}</td>
                   <td className="z_prd_td">

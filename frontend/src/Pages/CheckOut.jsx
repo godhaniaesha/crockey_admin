@@ -300,8 +300,9 @@ const CheckOut = () => {
                             {orderItems.length > 0 ? (
                                 orderItems.map((item) => (
                                     <div key={item.id} className="flex justify-between items-center text-gray-600">
-                                        <span className="text-sm">{item.name} × {item.quantity}</span>
-                                        <span className="font-medium">${item.price.toFixed(2)}</span>
+                                        <span className="text-sm" style={{wordBreak:"break-all"}}>{item.name} × {item.quantity}</span>
+                                        <span> </span>
+                                        <span className="font-medium ms-5">${item.price.toFixed(2)}</span>
                                     </div>
                                 ))
                             ) : (

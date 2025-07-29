@@ -91,7 +91,7 @@ function SubcategoryList(props) {
   if (error) {
     return <div className="z_subcat_container">Error: {error}</div>;
   }
-
+const truncate = (str, n) => str && str.length > n ? str.substring(0, n) + "..." : str;
   return (
     <div className="z_subcat_container">
       <div className="z_subcat_manage_content">
@@ -118,9 +118,9 @@ function SubcategoryList(props) {
         <table className="z_subcat_table">
           <thead>
             <tr className="z_subcat_tr">
-              <th className="z_subcat_th">Subcat ID</th>
+              <th className="z_subcat_th">Image</th>
+              <th className="z_subcat_th">Subcategory Name</th>
               <th className="z_subcat_th">Category Name</th>
-              <th className="z_subcat_th">Subcategory Details</th>
               <th className="z_subcat_th">Description</th>
               <th className="z_subcat_th">Status</th>
               {isAdmin && <th className="z_subcat_th">Actions</th>}
@@ -129,8 +129,8 @@ function SubcategoryList(props) {
           <tbody>
             {paginatedData.map((item) => (
               <tr className="z_subcat_tr" key={item._id || item.subcat_id}>
-                <td className="z_subcat_td">{item._id || item.subcat_id}</td>
-                <td className="z_subcat_td">{item.category_name || item.category_id?.name}</td>
+                {/* <td className="z_subcat_td">{item._id || item.subcat_id}</td> */}
+                
                 <td className="z_subcat_td">
                   <div className="z_subcat_details_cell">
                     <img
@@ -138,12 +138,16 @@ function SubcategoryList(props) {
                       alt={item.subcategory_details}
                       className="z_subcat_img"
                     />
-                    <span className="z_subcat_name">{item.name}</span>
+                    {/* <span className="z_subcat_name">{}</span> */}
                   </div>
                 </td>
+                <td className="z_subcat_td"> {truncate(item.name, 20)}</td>
                 <td className="z_subcat_td">
-                  {item.description && item.description.length > 60
-                    ? `${item.description.substring(0, 60)}...`
+                  {truncate(item.category_id?.name, 20)}
+                </td>
+                <td className="z_subcat_td">
+                  {item.description && item.description.length > 50
+                    ? `${item.description.substring(0, 50)}...`
                     : item.description}
                 </td>
                 <td className="z_subcat_td">

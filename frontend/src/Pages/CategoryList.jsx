@@ -17,7 +17,7 @@ function CategoryList(props) {
   const dispatch = useDispatch();
   const categoryState = useSelector((state) => state?.category);
   const { categories = [], loading = false, error = null } = categoryState || {};
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
 
@@ -81,7 +81,7 @@ function CategoryList(props) {
     : Array.isArray(categories)
       ? categories
       : [];
-  
+
   const filteredData = safeCategories.filter(
     (item) =>
       item?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -128,7 +128,7 @@ function CategoryList(props) {
       </div>
     );
   }
-
+  const truncate = (str, n) => str && str.length > n ? str.substring(0, n) + "..." : str;
   return (
     <>
       <div className="z_catList_container">
@@ -146,7 +146,7 @@ function CategoryList(props) {
               }}
             />
             {isAdmin && (
-              <button 
+              <button
                 className="z_catList_addBtn"
                 onClick={() => navigate('/category/add')}
               >
@@ -179,10 +179,10 @@ function CategoryList(props) {
                       className="z_catList_img"
                     />
                   </td>
-                  <td className="z_catList_td">{item.name}</td>
+                  <td className="z_catList_td">{truncate(item.name, 20)}</td>
                   <td className="z_catList_td">
-                    {item.description && item.description.length > 60
-                      ? `${item.description.substring(0, 60)}...`
+                    {item.description && item.description.length > 50
+                      ? `${item.description.substring(0, 50)}...`
                       : item.description}
                   </td>
                   <td className="z_catList_td">
@@ -245,9 +245,8 @@ function CategoryList(props) {
           {[...Array(totalPages)].map((_, idx) => (
             <button
               key={idx + 1}
-              className={`z_pagin_btn${
-                currentPage === idx + 1 ? " z_pagin_active" : ""
-              }`}
+              className={`z_pagin_btn${currentPage === idx + 1 ? " z_pagin_active" : ""
+                }`}
               onClick={() => handlePageChange(idx + 1)}
             >
               {idx + 1}
