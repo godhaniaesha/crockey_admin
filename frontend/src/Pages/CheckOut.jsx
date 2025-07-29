@@ -153,13 +153,13 @@ const CheckOut = () => {
 
     return (
         <>
-            <div className="d_MP-container w-full mt-10 p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
-                <h2 className="d_MP-title text-3xl font-extrabold mb-8 tracking-wide">Billing Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="col-span-2">
+            <div className="d_MP-container w-full mt-10 p-4 sm:p-8 bg-white rounded-2xl shadow-2xl border border-[#254D70]/10">
+                <h2 className="d_MP-title text-2xl sm:text-3xl font-extrabold mb-8 tracking-wide">Billing Details</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <div className="lg:col-span-2">
                         <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label className="d_MP-label block mb-2 font-semibold">First Name</label>
                                         <input
@@ -187,7 +187,7 @@ const CheckOut = () => {
                                 </div>
                             </div>
                             <div className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label className="d_MP-label block mb-2 font-semibold">Mobile No.</label>
                                         <input
@@ -231,7 +231,7 @@ const CheckOut = () => {
                                 </div>
                             </div>
                             <div className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label className="d_MP-label block mb-2 font-semibold">Town/City</label>
                                         <input
@@ -259,7 +259,7 @@ const CheckOut = () => {
                                 </div>
                             </div>
                             <div className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label className="d_MP-label block mb-2 font-semibold">Country</label>
                                         <input
@@ -288,7 +288,7 @@ const CheckOut = () => {
                             </div>
                         </form>
                     </div>
-                    <div className="border border-[#a6c2db] rounded-md p-6 h-fit">
+                    <div className="border border-[#a6c2db] rounded-md p-4 sm:p-6 h-fit">
                         {/* Header */}
                         <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
                             <h3 className="text-lg font-semibold text-gray-700">Product</h3>
@@ -326,9 +326,9 @@ const CheckOut = () => {
 
                         {/* Shipping Options */}
                         <div className="py-3 border-t border-gray-200">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="font-semibold text-gray-700">Shipping</span>
-                                <div className="text-right">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                                <span className="font-semibold text-gray-700 mb-2 sm:mb-0">Shipping</span>
+                                <div className="sm:text-right">
                                     <div className="space-y-2">
                                         <label className="flex items-center space-x-2 cursor-pointer">
                                             <input
