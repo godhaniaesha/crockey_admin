@@ -178,15 +178,15 @@ function ProductDetail() {
             {/* Key Highlights */}
             <ul className="pd-key-highlights" style={{ marginBottom: 10 }}>
               {highlights.slice(0, 3).map((h, i) => (
-                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15 }}>
-                  <FaCheckCircle style={{ color: '#2ECC40', fontSize: 15 }} /> {h}
+                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15 , wordBreak:"break-all"}}>
+                  <div><FaCheckCircle style={{ color: '#2ECC40', height: "15px" , width: "15px"}} /></div> {h}
                 </li>
               ))}
             </ul>
             {/* Meta Info */}
             <div className="pd-meta-row" style={{ gap: 10, fontSize: 15 }}>
               <span className="pd-category">{singleProduct.category_id?.name || 'Category'}</span>
-              <span className="pd-brand">{singleProduct.brand || 'Brand'}</span>
+              <span className="pd-brand" style={{wordBreak : "break-all"}}>{singleProduct.brand || 'Brand'}</span>
               <span className={`pd-stock ${singleProduct.stock > 0 ? 'pd-instock' : 'pd-outstock'}`}>
                 {singleProduct.stock > 0 ? `In Stock (${singleProduct.stock})` : 'Out of Stock'}
               </span>
@@ -252,7 +252,7 @@ function ProductDetail() {
                   <ul className="pd-highlights">
                     {highlights.map((h, i) => (
                       <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <FaCheckCircle style={{ color: '#2ECC40', fontSize: 15 }} /> {h}
+                       <div> <FaCheckCircle style={{ color: '#2ECC40', fontSize: 15 }} /></div> {h}
                       </li>
                     ))}
                   </ul>
@@ -278,3 +278,4 @@ function ProductDetail() {
 }
 
 export default ProductDetail;
+
