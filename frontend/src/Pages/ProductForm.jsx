@@ -232,8 +232,74 @@ const ProductForm = () => {
     inputRef.current.click();
   };
 
+  const validateForm = () => {
+    if (!form.name.trim()) {
+      toast.error("Product Name is required.");
+      return false;
+    }
+    if (!form.brand.trim()) {
+      toast.error("Brand is required.");
+      return false;
+    }
+    if (!form.category) {
+      toast.error("Category is required.");
+      return false;
+    }
+    if (!form.subcategory) {
+      toast.error("Subcategory is required.");
+      return false;
+    }
+    if (!form.pattern.trim()) {
+      toast.error("Pattern is required.");
+      return false;
+    }
+    if (!form.weight.trim()) {
+      toast.error("Weight is required.");
+      return false;
+    }
+    if (!form.short_description.trim()) {
+      toast.error("Short Description is required.");
+      return false;
+    }
+    if (!form.long_description.trim()) {
+      toast.error("Long Description is required.");
+      return false;
+    }
+    if (!form.price || isNaN(form.price) || Number(form.price) <= 0) {
+      toast.error("Valid Price is required.");
+      return false;
+    }
+    if (form.discount === "" || isNaN(form.discount) || Number(form.discount) < 0) {
+      toast.error("Valid Discount is required.");
+      return false;
+    }
+    if (!form.stock || isNaN(form.stock) || Number(form.stock) < 0) {
+      toast.error("Valid Stock Quantity is required.");
+      return false;
+    }
+    if (form.lowstock === "" || isNaN(form.lowstock) || Number(form.lowstock) < 0) {
+      toast.error("Valid Low Stock Threshold is required.");
+      return false;
+    }
+    if (images.length === 0) {
+      toast.error("At least one product image is required.");
+      return false;
+    }
+    if (selectedColors.length === 0) {
+      toast.error("Select at least one color.");
+      return false;
+    }
+    if (selectedSizes.length === 0) {
+      toast.error("Select at least one size.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     const formData = new FormData();
     formData.append("name", form.name);
     formData.append("short_description", form.short_description);
@@ -269,15 +335,13 @@ const ProductForm = () => {
       dispatch(fetchProducts());
       navigate("/product/list");
     } catch (error) {
-      console.error("Product create error:", error);
-      // Extract backend error message if available
       let errorMsg =
         error?.response?.data?.error ||
         error?.response?.data?.message ||
         error?.message ||
         error?.toString() ||
-        "Something went wrong.";
-      toast.error(errorMsg);
+        "Something went wrong. Please try again.";
+      toast.error(`Error: ${errorMsg}`);
     }
   };
 
