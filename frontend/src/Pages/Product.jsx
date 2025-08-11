@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProductsforshop } from "../redux/slice/product.slice";
-import { createCart, addOrUpdateProduct, fetchCarts } from "../redux/slice/cart.slice";
+import {
+  createCart,
+  addOrUpdateProduct,
+  fetchCarts,
+} from "../redux/slice/cart.slice";
 import "../style/x_app.css";
 import { GrCart } from "react-icons/gr";
 import { MdShoppingCart } from "react-icons/md";
@@ -34,36 +38,41 @@ const Product = () => {
   const [addingToCart, setAddingToCart] = useState(null);
   const filterRef = React.useRef(null);
   const dispatch = useDispatch();
-  const { products = [], loading, error } = useSelector((state) => state.product) || {};
+  const {
+    products = [],
+    loading,
+    error,
+  } = useSelector((state) => state.product) || {};
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
   const [search, setSearch] = useState("");
   const { carts = [] } = useSelector((state) => state.cart) || {};
-  
+
   // Get user from localStorage once and memoize it
   const user = React.useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem('user') || 'null');
+      return JSON.parse(localStorage.getItem("user") || "null");
     } catch {
       return null;
     }
   }, []);
-  
+
   const navigate = useNavigate();
 
   const { categories = [] } = useSelector((state) => state.category) || {};
   const safeCategories = Array.isArray(categories?.result)
     ? categories.result
     : Array.isArray(categories)
-      ? categories
-      : [];
+    ? categories
+    : [];
 
-  const { subcategories = [] } = useSelector((state) => state.subcategory) || {};
+  const { subcategories = [] } =
+    useSelector((state) => state.subcategory) || {};
   const safeSubcategories = Array.isArray(subcategories?.result)
     ? subcategories.result
     : Array.isArray(subcategories)
-      ? subcategories
-      : [];
+    ? subcategories
+    : [];
 
   // Fetch products only once on mount
   useEffect(() => {
@@ -84,8 +93,8 @@ const Product = () => {
         setShowFilter(false);
       }
     }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   React.useEffect(() => {
@@ -120,14 +129,14 @@ const Product = () => {
   const handleSubcategory = (subId) => {
     setSelectedSubcategoryId((prev) => (prev === subId ? null : subId));
   };
-  
+
   const handleColor = (color) => {
     setSelectedColors((prev) =>
       prev.includes(color) ? prev : [...prev, color]
     );
     setShowColorPalette(false);
   };
-  
+
   const handlePrice = (idx, value) => {
     let newPrice = [...price];
     newPrice[idx] = Number(value);
@@ -138,56 +147,58 @@ const Product = () => {
   };
 
   // Optimized handleAddToCart - removed fetchCarts call
-  const handleAddToCart = useCallback(async (product) => {
-    if (!user) {
-      alert('User not logged in');
-      return;
-    }
+  const handleAddToCart = useCallback(
+    async (product) => {
+      if (!user) {
+        alert("User not logged in");
+        return;
+      }
 
-    try {
-      setAddingToCart(product._id);
-      const data = {
-        user_id: user._id,
-        product_id: product._id,
-        quantity: 1
-      };
-      
-      // Only call addOrUpdateProduct, don't fetch carts immediately
-      await dispatch(addOrUpdateProduct(data)).unwrap();
-      
-      // Optional: You can update the cart state optimistically here
-      // or fetch carts only when user navigates to cart page
-      
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Failed to add item to cart');
-    } finally {
-      setAddingToCart(null);
-    }
-  }, [dispatch, user]);
+      try {
+        setAddingToCart(product._id);
+        const data = {
+          user_id: user._id,
+          product_id: product._id,
+          quantity: 1,
+        };
+
+        // Only call addOrUpdateProduct, don't fetch carts immediately
+        await dispatch(addOrUpdateProduct(data)).unwrap();
+
+        // Optional: You can update the cart state optimistically here
+        // or fetch carts only when user navigates to cart page
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        alert("Failed to add item to cart");
+      } finally {
+        setAddingToCart(null);
+      }
+    },
+    [dispatch, user]
+  );
 
   // Filter products based on selected category and subcategory
   let displayProducts = products;
 
   // Calculate min and max price from products - memoize this
   const priceRange = React.useMemo(() => {
-    const prices = products.map(p => p.price).filter(Boolean);
+    const prices = products.map((p) => p.price).filter(Boolean);
     return {
       min: prices.length ? Math.min(...prices) : 0,
-      max: prices.length ? Math.max(...prices) : 1000
+      max: prices.length ? Math.max(...prices) : 1000,
     };
   }, [products]);
 
   // Filter by price
   displayProducts = displayProducts.filter(
-    p => p.price >= price[0] && p.price <= price[1]
+    (p) => p.price >= price[0] && p.price <= price[1]
   );
 
   // Filter by color
   if (selectedColors.length > 0) {
-    displayProducts = displayProducts.filter(
-      p => (p.colors || []).some(c =>
-        selectedColors.includes(typeof c === 'string' ? c : c.name || c.code)
+    displayProducts = displayProducts.filter((p) =>
+      (p.colors || []).some((c) =>
+        selectedColors.includes(typeof c === "string" ? c : c.name || c.code)
       )
     );
   }
@@ -212,8 +223,12 @@ const Product = () => {
     const searchLower = search.toLowerCase();
     displayProducts = displayProducts.filter((p) => {
       const nameMatch = p.name && p.name.toLowerCase().includes(searchLower);
-      const catMatch = p.category_id && (p.category_id.name || "").toLowerCase().includes(searchLower);
-      const subcatMatch = p.subcategory_id && (p.subcategory_id.name || "").toLowerCase().includes(searchLower);
+      const catMatch =
+        p.category_id &&
+        (p.category_id.name || "").toLowerCase().includes(searchLower);
+      const subcatMatch =
+        p.subcategory_id &&
+        (p.subcategory_id.name || "").toLowerCase().includes(searchLower);
       return nameMatch || catMatch || subcatMatch;
     });
   }
@@ -230,8 +245,8 @@ const Product = () => {
     return Array.from(
       new Set(
         products
-          .flatMap(p => p.colors || [])
-          .map(c => typeof c === 'string' ? c : c.name || c.code || '')
+          .flatMap((p) => p.colors || [])
+          .map((c) => (typeof c === "string" ? c : c.name || c.code || ""))
           .filter(Boolean)
       )
     );
@@ -248,8 +263,9 @@ const Product = () => {
           >
             Filters
             <svg
-              className={`w-4 h-4 ml-2 transition-transform ${showFilter ? "rotate-180" : ""
-                }`}
+              className={`w-4 h-4 ml-2 transition-transform ${
+                showFilter ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -276,12 +292,16 @@ const Product = () => {
               z-40 bg-white border border-gray-200 rounded-md shadow-lg w-72  overflow-y-auto
               transition-all duration-300 ease-in-out
               fixed right-0
-              ${window.innerWidth < 768
-                ? 'top-0 h-full rounded-none'
-                : 'top-[80px] h-[calc(100vh-80px)]'}
-              ${showFilter
-                ? 'translate-x-0 opacity-100 pointer-events-auto'
-                : 'translate-x-full opacity-0 pointer-events-none'}
+              ${
+                window.innerWidth < 768
+                  ? "top-0 h-full rounded-none"
+                  : "top-[80px] h-[calc(100vh-80px)]"
+              }
+              ${
+                showFilter
+                  ? "translate-x-0 opacity-100 pointer-events-auto"
+                  : "translate-x-full opacity-0 pointer-events-none"
+              }
             `}
           >
             {/* Close btn for mobile */}
@@ -323,16 +343,27 @@ const Product = () => {
                       <img
                         src={`http://localhost:5000/uploads/${cat.image}`}
                         alt={cat.name}
-                        style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', marginRight: 8, border: '1px solid #eee' }}
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 6,
+                          objectFit: "cover",
+                          marginRight: 8,
+                          border: "1px solid #eee",
+                        }}
                       />
                     )}
-                    <span className="text-gray-700">{cat.name}</span>
+                    <span className="text-gray-700">
+                      {cat.name.length > 20
+                        ? cat.name.substring(0, 20) + "..."
+                        : cat.name}
+                    </span>
                   </label>
                 ))}
               </div>
-               {/* Subcategory */}
+              {/* Subcategory */}
               {selectedCategories.length > 0 && (
-                <div style={{ marginTop: '1rem' }}>
+                <div style={{ marginTop: "1rem" }}>
                   <h3 className="font-semibold text-lg mb-2">Subcategory</h3>
                   {safeSubcategories.map((sub) => {
                     // If categories are selected, only enable subcategories that belong to them
@@ -343,7 +374,9 @@ const Product = () => {
                     return (
                       <label
                         key={sub._id}
-                        className={`x_checkbox_label flex items-center mb-1 cursor-pointer transition-transform duration-300 ${!isEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+                        className={`x_checkbox_label flex items-center mb-1 cursor-pointer transition-transform duration-300 ${
+                          !isEnabled ? "opacity-50 pointer-events-none" : ""
+                        }`}
                       >
                         <input
                           type="checkbox"
@@ -362,9 +395,9 @@ const Product = () => {
                               width: 24,
                               height: 24,
                               borderRadius: 6,
-                              objectFit: 'cover',
+                              objectFit: "cover",
                               marginRight: 8,
-                              border: '1px solid #eee',
+                              border: "1px solid #eee",
                             }}
                           />
                         )}
@@ -382,7 +415,7 @@ const Product = () => {
                     <span
                       key={color + idx}
                       className={`w-6 h-6 rounded-full border border-gray-300 inline-block cursor-pointer`}
-                      style={{ background: color, margin: '0 2px' }}
+                      style={{ background: color, margin: "0 2px" }}
                       onClick={() => handleColor(color)}
                     ></span>
                   ))}
@@ -442,7 +475,7 @@ const Product = () => {
             placeholder="Search.."
             className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
           <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
             <svg
@@ -464,7 +497,7 @@ const Product = () => {
           {selectedCategories
             .filter((c) => c)
             .map((catId) => {
-              const catObj = safeCategories.find(c => c._id === catId);
+              const catObj = safeCategories.find((c) => c._id === catId);
               return (
                 <span key={catId} className="x_filter_tag">
                   {catObj ? catObj.name : catId}
@@ -480,8 +513,7 @@ const Product = () => {
                   </button>
                 </span>
               );
-            })
-          }
+            })}
           {selectedColors.map((color, idx) => (
             <span
               key={color}
@@ -509,7 +541,9 @@ const Product = () => {
           {loading ? (
             <div className="col-span-full text-center text-lg">Loading...</div>
           ) : error ? (
-            <div className="col-span-full text-center text-red-500">{error}</div>
+            <div className="col-span-full text-center text-red-500">
+              {error}
+            </div>
           ) : Array.isArray(displayProducts) && displayProducts.length > 0 ? (
             displayProducts.map((product) => (
               <div
@@ -532,7 +566,7 @@ const Product = () => {
                   )}
                   {/* Quick Actions */}
                   <div className="x_quick_actions absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button 
+                    <button
                       className="x_action_btn w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -550,7 +584,10 @@ const Product = () => {
                 </div>
 
                 {/* Product Info */}
-                <div className="x_product_info p-4" onClick={() => navigate(`/product/detail?id=${product._id}`)}>
+                <div
+                  className="x_product_info p-4"
+                  onClick={() => navigate(`/product/detail?id=${product._id}`)}
+                >
                   {/* Category & Brand */}
                   <div className="x_product_meta flex items-center gap-2 mb-2">
                     <span className="x_category text-xs x_blue bg-blue-50 px-2 py-1 rounded-full">
@@ -572,10 +609,11 @@ const Product = () => {
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
-                          className={`w-4 h-4 ${i < Math.floor(product.rating || 0)
+                          className={`w-4 h-4 ${
+                            i < Math.floor(product.rating || 0)
                               ? "text-yellow-400"
                               : "text-gray-300"
-                            }`}
+                          }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -603,7 +641,9 @@ const Product = () => {
               </div>
             ))
           ) : (
-            <div className="col-span-full text-center text-gray-500">No products found.</div>
+            <div className="col-span-full text-center text-gray-500">
+              No products found.
+            </div>
           )}
         </div>
       </div>
