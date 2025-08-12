@@ -57,18 +57,19 @@ function OrderList() {
     <div className="z_odrHis_container">
       <div className="z_odrHis_manage_content">
         <h3 className="z_odrHis_title">Order History</h3>
-        <div className="z_odrHis_topbar">
+        <div className="z_odrHis_topbar" >
           <div className="z_odrHis_searchWrapper">
-            <input
-              className="z_odrHis_search"
-              type="text"
-              placeholder="Search orders..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
+              <input
+                className="z_odrHis_search"
+                type="text"
+                placeholder="Search orders..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+
             <span className="z_odrHis_searchIcon">
               {/* SVG search icon */}
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -148,7 +149,6 @@ function OrderList() {
                   </span>
                 </td>
                 <td className="z_odrHis_td">
-
                   <button
                     className="z_odrHis_actionBtn z_odrHis_viewBtn"
                     title="View"
@@ -174,7 +174,9 @@ function OrderList() {
           {[...Array(totalPages)].map((_, idx) => (
             <button
               key={idx + 1}
-              className={`z_pagin_btn${currentPage === idx + 1 ? " z_pagin_active" : ""}`}
+              className={`z_pagin_btn${
+                currentPage === idx + 1 ? " z_pagin_active" : ""
+              }`}
               onClick={() => handlePageChange(idx + 1)}
             >
               {idx + 1}

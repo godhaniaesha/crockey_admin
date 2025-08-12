@@ -3959,6 +3959,7 @@
   font-size: 1.08rem;
   color: #222;
   font-weight: 500;
+  word-break: break-all;
 }
 .z_history_totalRow {
   margin-top: 18px;
@@ -4022,6 +4023,7 @@
   font-size: 1.08rem;
   font-weight: 600;
   color: #222;
+  word-break: break-all;
 }
 .z_history_productPrice {
   font-size: 1.05rem;
@@ -4274,4 +4276,25 @@
   .z_history_value {
     font-size: 0.85rem;
   }
+}
+
+
+.z_odrHis_searchWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.z_odrHis_search {
+  padding-right: 35px; /* icon mate jagya */
+  height: 36px;
+  border: 1px solid #0d6efd;
+  border-radius: 6px;
+}
+
+.z_odrHis_searchIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
 }
